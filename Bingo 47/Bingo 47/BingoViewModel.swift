@@ -63,29 +63,27 @@ class BingoViewModel: ObservableObject {
 
     let baseBet = 25 // Base cost per game
     let blackOutWinAmount = 200 // 200x their bet
-    let allSpaces: [BingoSpace] = (1...75).map { BingoSpace(id: "\($0)", isFreeSpace: false, label: "\($0)") }
+
+    let allSpaces: [BingoSpace] = [
+        1, 2, 3, 4, 5, 6,
+        16, 17, 18, 19, 20, 21,
+        31, 32, 33, 34, 35, 36,
+        46, 47, 48, 49, 50, 51,
+        61, 62, 63, 64, 65, 66
+    ].map { BingoSpace(id: "\($0)", isFreeSpace: false, label: "\($0)") }
 
     let bingoPatterns: [[Int]] = [
-        // Horizontal rows
-        [0, 1, 2, 3, 4],
-        [5, 6, 7, 8, 9],
-        [10, 11, 12, 13, 14],
-        [15, 16, 17, 18, 19],
-        [20, 21, 22, 23, 24],
-
-        // Vertical columns
-        [0, 5, 10, 15, 20],
-        [1, 6, 11, 16, 21],
-        [2, 7, 12, 17, 22],
-        [3, 8, 13, 18, 23],
-        [4, 9, 14, 19, 24],
-
-        // Diagonals (excluding the center "FREE" space)
-        [0, 6, 18, 24], // Top-left to bottom-right diagonal
-        [4, 8, 16, 20]  // Top-right to bottom-left diagonal
-    ]
+            [0, 1, 2], // Top row
+            [3, 4, 5], // Middle row
+            [6, 7, 8], // Bottom row
+            [0, 3, 6], // Left column
+            [1, 4, 7], // Middle column
+            [2, 5, 8], // Right column
+            [0, 4, 8], // Diagonal top-left to bottom-right
+            [2, 4, 6]  // Diagonal top-right to bottom-left
+        ]
     
-    private(set) var numbersToDraw: Int = 60
+    private(set) var numbersToDraw: Int = 15
 
     init() {
         resetGame()
@@ -343,39 +341,16 @@ class BingoViewModel: ObservableObject {
     }
 
     func generateBingoCard() -> BingoCard {
-        let ranges = [
-            1...15,   // B column
-            16...30,  // I column
-            31...45,  // N column (middle has "FREE")
-            46...60,  // G column
-            61...75   // O column
-        ]
-        
         var spaces: [BingoSpace] = []
-        
-        for (columnIndex, range) in ranges.enumerated() {
-            var columnNumbers = Array(range).shuffled()
-            
-            if columnIndex == 2 { // N column needs a Free Space in the center
-                columnNumbers = Array(columnNumbers.prefix(4)) // Take 4 numbers
-            } else {
-                columnNumbers = Array(columnNumbers.prefix(5)) // Take 5 numbers
-            }
-            
-            for rowIndex in 0..<5 {
-                let isFreeSpace = (columnIndex == 2 && rowIndex == 2) // Middle space in the N column
-                let label: String
-                if isFreeSpace {
-                    label = "FREE"
-                    spaces.append(BingoSpace(id: "FREE", isFreeSpace: true, label: label))
-                } else {
-                    label = "\(columnNumbers[rowIndex >= 2 && columnIndex == 2 ? rowIndex - 1 : rowIndex])"
-                    spaces.append(BingoSpace(id: label, isFreeSpace: false, label: label))
-                }
-            }
+        let shuffledNumbers = self.allSpaces.filter { $0.label != "47" }.shuffled()
+
+        for i in 0..<9 {
+            let label = (i == 4) ? "47" : "\(shuffledNumbers[i].label)"
+            let space = BingoSpace(id: label, isFreeSpace: false, label: label) // No more free space!
+            spaces.append(space)
         }
         
-        return BingoCard(spaces: spaces)
+        return BingoCard(rows: 3, columns: 3, spaces: spaces)
     }
     
     // MARK: USER ACTIONS
@@ -393,18 +368,9 @@ class BingoViewModel: ObservableObject {
         credits -= baseBet * betMultiplier // Deduct credits
         resetGame() // Reset game state for a new game
 
-        // Pre-generate the sequence of numbers to draw
-        numbersToDraw = 60 // Int.random(in: 55...65)
+        numbersToDraw = 15
         preGeneratedSpaces = Array(allSpaces.shuffled().prefix(numbersToDraw)) // Generate exact sequence
         calledSpaces = [] // Reset called spaces
-
-        if autoMark {
-            for card in bingoCards {
-                if let freeSpace = card.spaces.first(where: { $0.isFreeSpace }) {
-                    markSpace(freeSpace, cardID: card.id) // Mark the Free Space
-                }
-            }
-        }
         
         self.revealNextSpace()
 
@@ -485,27 +451,24 @@ class BingoViewModel: ObservableObject {
     // MARK: Mark Space
     func markSpace(_ space: BingoSpace, cardID: UUID) {
         guard isGameActive else { return } // Ensure the game is active
-        guard space.isFreeSpace || calledSpaces.contains(space) else {
+        guard calledSpaces.contains(space) else {
             soundManager.playSound(.markedNotCalled)
             HapticManager.shared.triggerHaptic(for: .wrongNumber)
             return
         }
-        
 
-        // Find the card by its ID
         if let index = bingoCards.firstIndex(where: { $0.id == cardID }) {
-            var mutableCard = bingoCards[index] // Get a mutable copy of the card
+            var mutableCard = bingoCards[index]
             
             if !mutableCard.markedSpaces.contains(space) {
                 mutableCard.markedSpaces.insert(space)
             }
             
-            bingoCards[index] = mutableCard // Replace the modified card in the array
-            calculateResults() // Update results if necessary
+            bingoCards[index] = mutableCard
+            calculateResults()
             playSoundForSpaceMarked(space, card: mutableCard)
         }
         
-        // If last call is active and all numbers are now marked, end the game immediately
         if isLastCallActive && !hasUnmarkedCalledSpaces() {
             endLastCall()
         }
@@ -589,9 +552,7 @@ class BingoViewModel: ObservableObject {
     
     func labelForSpeach(space: BingoSpace) -> String {
         let numberString = space.label
-        let columnString = column(for: numberString)
-        
-        return "\(columnString) \(numberString)"
+        return space.label
     }
 
     // Helper method to determine column based on number
@@ -646,77 +607,51 @@ class BingoViewModel: ObservableObject {
     }
     
     func calculatePayout(for bingos: Int) -> Int {
-        // Directly calculate the payout based on the number of bingos
-        switch bingos {
-        case 1:
-            return 2 * betMultiplier
-        case 2:
-            return 5 * betMultiplier
-        case 3:
-            return 10 * betMultiplier
-        case 4:
-            return 15 * betMultiplier
-        case 5:
-            return 1 * (baseBet * betMultiplier)
-        case 6:
-            return 2 * (baseBet * betMultiplier)
-        case 7:
-            return 4 * (baseBet * betMultiplier)
-        case 8:
-            return 8 * (baseBet * betMultiplier)
-        case 9:
-            return 15 * (baseBet * betMultiplier)
-        case 10:
-            return 30 * (baseBet * betMultiplier)
-        case 11:
-            return 40 * (baseBet * betMultiplier)
-        case 12:
-            // Blackout payout
-            return blackOutWinAmount * (baseBet * betMultiplier)
-        default:
+        let betAmount = baseBet * betMultiplier // Full bet amount
+
+        if bingos <= 0 {
             return 0
+        } else if bingos <= 5 {
+            // Return a percentage of the bet based on the number of bingos (20% per bingo)
+            let percentage = bingos * 20 // 1 bingo = 20%, 2 = 40%, ..., 5 = 100%
+            return (betAmount * percentage) / 100
+        } else {
+            // New scaling logic for 6+ bingos
+            switch bingos {
+            case 6:
+                return betAmount * 2 // 6 bingos = 2x bet
+            case 7:
+                return betAmount * 4 // 7 bingos = 4x bet
+            case 8:
+                return betAmount * 8 // 8 bingos = 8x bet
+            default:
+                return betAmount * (1 << (bingos - 5)) // Exponential scaling for 9+ bingos
+            }
         }
     }
 
     func generatePayoutTable() -> [Payout] {
         var table: [Payout] = []
-        for bingos in minimumBingosForPayout...12 {
+        
+        for bingos in minimumBingosForPayout...bingoPatterns.count {
             let win = calculatePayout(for: bingos)
             table.append(Payout(bingos: bingos, win: win))
         }
+        
         return table
     }
     
     func findBingoSpaces(for card: BingoCard) -> Set<BingoSpace> {
-        let markedSpaces = card.markedSpaces // Only count spaces that were marked
+        let markedSpaces = card.markedSpaces
         var bingoSpaces: Set<BingoSpace> = []
 
-        // Check rows
-        for row in 0..<card.rows {
-            let rowSpaces = (0..<card.columns).map { card.spaces[row * card.columns + $0] }
-            if rowSpaces.allSatisfy({ markedSpaces.contains($0) || $0.isFreeSpace }) {
-                bingoSpaces.formUnion(rowSpaces)
+        // Loop through each bingo pattern
+        for pattern in bingoPatterns {
+            // Check if all positions in the pattern are marked
+            if pattern.allSatisfy({ markedSpaces.contains(card.spaces[$0]) }) {
+                // If this pattern is a bingo, add all its spaces to the bingoSpaces set
+                bingoSpaces.formUnion(pattern.map { card.spaces[$0] })
             }
-        }
-
-        // Check columns
-        for col in 0..<card.columns {
-            let colSpaces = (0..<card.rows).map { card.spaces[$0 * card.columns + col] }
-            if colSpaces.allSatisfy({ markedSpaces.contains($0) || $0.isFreeSpace }) {
-                bingoSpaces.formUnion(colSpaces)
-            }
-        }
-
-        // Check diagonal (top-left to bottom-right)
-        let diagonal1Spaces = (0..<card.rows).map { card.spaces[$0 * card.columns + $0] }
-        if diagonal1Spaces.allSatisfy({ markedSpaces.contains($0) || $0.isFreeSpace }) {
-            bingoSpaces.formUnion(diagonal1Spaces)
-        }
-
-        // Check diagonal (top-right to bottom-left)
-        let diagonal2Spaces = (0..<card.rows).map { card.spaces[$0 * card.columns + (card.columns - 1 - $0)] }
-        if diagonal2Spaces.allSatisfy({ markedSpaces.contains($0) || $0.isFreeSpace }) {
-            bingoSpaces.formUnion(diagonal2Spaces)
         }
 
         return bingoSpaces

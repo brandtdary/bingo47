@@ -91,7 +91,7 @@ final class SoundManager {
             print("Current Audio Session Options: \(session.categoryOptions)")
 #endif
             
-            try session.setCategory(.ambient)
+            try session.setCategory(.soloAmbient)
             try session.setActive(true)
 #if DEBUG
             print("Audio session set to .ambient and activated successfully.")

@@ -50,7 +50,7 @@ struct BingoView: View {
                     }
                     
                     // Called Numbers Grid
-                    BingoBoardView(calledSpaces: viewModel.calledSpaces, allSpaces: viewModel.allSpaces, totalWidth: totalWidth, lastCalledNumber: viewModel.currentSpace)
+                    BingoBoardView(calledSpaces: viewModel.calledSpaces, allSpaces: viewModel.allSpaces, totalWidth: totalWidth * 0.75, lastCalledNumber: viewModel.currentSpace)
                         .padding(.bottom, 8)
                     
                     ZStack {
@@ -90,7 +90,7 @@ struct BingoView: View {
                             }
                             
                             Text("Gud Milk").font(.system(size: cardSize / 30))
-                                .offset(y: (cardSize / 20))
+                                .offset(y: (cardSize / 10))
                                 .foregroundStyle(viewModel.isGameActive ? .clear : .white)
                         }
                     }
@@ -109,7 +109,8 @@ struct BingoView: View {
                     } else {
                         
                         VStack(alignment: .trailing, spacing: 0) {
-                            let ballSize = geometry.size.width / 62
+                            let maxHeight: CGFloat = 25
+                            let ballSize = max(maxHeight, (geometry.size.width / CGFloat(viewModel.numbersToDraw + 2)))
                             if useBallIndicator {
                                 // Ball Indicator View
                                 HStack(spacing: 0) {
@@ -120,7 +121,7 @@ struct BingoView: View {
                                     }
                                     Spacer()
                                 }
-                                .frame(height: 20)
+                                .frame(height: maxHeight * 1.1)
                                 .clipShape(Rectangle())
                                 .onTapGesture(count: 2) {
                                     useBallIndicator.toggle()
@@ -417,9 +418,9 @@ struct BingoBoardView: View {
     let lastCalledNumber: BingoSpace? // Last called number
     
     var body: some View {
-        let columns = 15
+        let columns = 6
         let spacing: CGFloat = 0 // Ensure no gaps
-        let columnWidth = (totalWidth - (spacing * CGFloat(columns - 1))) / CGFloat(columns)
+        let columnWidth = (totalWidth - (spacing * CGFloat(columns - 1))) / CGFloat(columns) * 0.8
         let borderWidth = max(1, columnWidth * 0.05) // Adjust border based on column width
         
         LazyVGrid(
@@ -428,21 +429,30 @@ struct BingoBoardView: View {
         ) {
             ForEach(allSpaces, id: \.id) { space in
                 let isLastCalled = space == lastCalledNumber
-                
+                let isCalled = calledSpaces.contains(space)
+
                 ZStack {
                     Rectangle()
-                        .fill(isLastCalled ? .yellow : calledSpaces.contains(space) ? Color.red : Color.blue)
+                        .fill(isLastCalled ? .yellow : isCalled ? Color.red : Color.blue)
                         .aspectRatio(1, contentMode: .fit)
-                        .border(Color.yellow, width: borderWidth) // Dynamically sized border
+                        .border(Color.white, width: borderWidth) // Dynamically sized border
                     
-                    Text(space.label)
-                        .font(.system(size: columnWidth * 0.55, weight: .bold)) // Scale text
-                        .lineLimit(1) // Prevent multi-line wrapping
-                        .minimumScaleFactor(0.5) // Shrink text instead of wrapping
-                        .foregroundColor(isLastCalled ? .black : .yellow)
-                        .shadow(color: isLastCalled ? .clear : .black, radius: 0.5, x: 1, y: 1)
+                    if isCalled {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: columnWidth * 0.55, weight: .bold)) // Scale text
+                            .lineLimit(1) // Prevent multi-line wrapping
+                            .minimumScaleFactor(0.5) // Shrink text instead of wrapping
+                            .foregroundColor(.white)
+                            .shadow(color: isLastCalled ? .clear : .black, radius: 0.5, x: 1, y: 1)
+                    } else {
+                        Text(space.label)
+                            .font(.system(size: columnWidth * 0.55, weight: .bold)) // Scale text
+                            .lineLimit(1) // Prevent multi-line wrapping
+                            .minimumScaleFactor(0.5) // Shrink text instead of wrapping
+                            .foregroundColor(.white)
+                            .shadow(color: isLastCalled ? .clear : .black, radius: 0.5, x: 1, y: 1)
+                    }
                 }
-                .frame(width: columnWidth) // Ensure each item maintains its width
             }
         }
         .frame(width: totalWidth) // Ensure grid spans full width
@@ -510,7 +520,7 @@ struct BingoCardView: View {
             }
         }
         .frame(width: cardSize, height: cardSize)
-        .background(Color.black)
+        .background(Color.blue)
         .overlay(
             RoundedRectangle(cornerRadius: 5)
                 .stroke(Color.gray, lineWidth: 3)
