@@ -62,6 +62,7 @@ class BingoViewModel: ObservableObject {
     private let betMultipliers = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
     private var previousBingos = 0
     private let jackpotStorageKey = "jackpotStorage"
+    static let bonusSpaceID = "47"
     
     var jackpotStorage: [Int: Int] {
         get {
@@ -107,8 +108,8 @@ class BingoViewModel: ObservableObject {
             [2, 4, 6]  // Diagonal top-right to bottom-left
         ]
     
-    private var defaultNumbersToDraw: Int = 15
-    private(set) var numbersToDraw: Int = 15
+    private let defaultNumbersToDraw: Int = 17
+    private(set) var numbersToDraw: Int = 17
     private(set) var bonusBalls: Int = 0
 
     init() {
@@ -390,7 +391,7 @@ class BingoViewModel: ObservableObject {
         resetGame() // Reset game state for a new game
         
 #if DEBUG
-        bonusBalls = 10
+        bonusBalls = 5
 #endif
         
         numbersToDraw = defaultNumbersToDraw + bonusBalls
@@ -679,19 +680,19 @@ class BingoViewModel: ObservableObject {
 
         if bingos <= 0 {
             return 0
-        } else if bingos <= 5 {
-            // Return a percentage of the bet based on the number of bingos (20% per bingo)
-            let percentage = bingos * 20 // 1 bingo = 20%, 2 = 40%, ..., 5 = 100%
+        } else if bingos <= 4 {
+            let percentage = bingos * 25
             return (betAmount * percentage) / 100
         } else {
-            // New scaling logic for 6+ bingos
             switch bingos {
-            case 6:
+            case 5:
                 return betAmount * 2
-            case 7:
+            case 6:
                 return betAmount * 3
+            case 7:
+                return betAmount * 4
             case 8:
-                return betAmount * 4 // PLUS JACKPOT
+                return betAmount * 5 // PLUS JACKPOT
             default:
                 return betAmount * (1 << (bingos - 5)) // Exponential scaling for 9+ bingos
             }

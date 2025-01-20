@@ -413,10 +413,11 @@ struct BingoView: View {
                         .font(.title)
                         .foregroundColor(.green)
 
-                    Button("Thanks") {
+                    Button("COLLECT") {
                         viewModel.showJackpotSheet = false
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(.green)
                 }
                 .padding()
             }
@@ -600,7 +601,7 @@ struct BingoSpaceView: View {
                         .frame(width: spaceSize * 0.9, height: spaceSize * 0.9)
                 }
             }
-            let fontSize = space.isFreeSpace ? spaceSize * 0.3 : spaceSize * 0.4
+            let fontSize = space.isFreeSpace ? spaceSize * 0.3 : space.id == BingoViewModel.bonusSpaceID ? spaceSize * 0.5 : spaceSize * 0.4
 
             Text(space.label)
                 .font(.system(size: fontSize, weight: .bold))
