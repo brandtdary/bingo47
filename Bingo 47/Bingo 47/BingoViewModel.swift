@@ -732,11 +732,11 @@ class BingoViewModel: ObservableObject {
 
 extension BingoViewModel {
     var bingoSpaceColor: Color {
-        BingoColor(rawValue: bingoSpaceColorChoice)?.color ?? .yellow
+        BingoColor(rawValue: bingoSpaceColorChoice)?.color ?? .red
     }
     
     var dauberColor: Color {
-        BingoColor(rawValue: dauberColorChoice)?.color ?? .green
+        BingoColor(rawValue: dauberColorChoice)?.color ?? .blue
     }
     
     private func assignColorsForCurrentGame() {
