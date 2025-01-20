@@ -12,9 +12,9 @@ class IAPManager {
     static let shared = IAPManager()
 
     // Define static constants for product IDs
-    static let productCreditsTier1ID = "com.gudmilk.bingotap.credits.tier1"
-    static let productCreditsTier2ID = "com.gudmilk.bingotap.credits.tier2"
-    static let productCreditsTier3ID = "com.gudmilk.bingotap.credits.tier3"
+    static let productCreditsTier1ID = "com.gudmilk.bingo47.credits.tier1"
+    static let productCreditsTier2ID = "com.gudmilk.bingo47.credits.tier2"
+    static let productCreditsTier3ID = "com.gudmilk.bingo47.credits.tier3"
 
     
     private let productIdentifiers: [String] = [productCreditsTier1ID, productCreditsTier2ID, productCreditsTier3ID]
