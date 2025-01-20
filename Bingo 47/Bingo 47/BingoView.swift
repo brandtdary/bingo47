@@ -58,7 +58,105 @@ struct BingoView: View {
                         .padding(.bottom, 8)
                     
                     ZStack {
-                        VStack {
+                        VStack(spacing: 16) {
+                            // MARK: SETTINGS MENU
+                            Menu {
+                                // AutoMark Toggle
+                                Button(action: {
+                                    viewModel.autoMark.toggle()
+                                    HapticManager.shared.triggerHaptic(for: .choose)
+                                }) {
+                                    HStack {
+                                        Text("Auto-Mark")
+                                        Spacer()
+                                        if viewModel.autoMark {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                                
+                                // AutoMark Toggle
+                                Button(action: {
+                                    viewModel.vibrationEnabled.toggle()
+                                }) {
+                                    HStack {
+                                        Text("Vibration")
+                                        Spacer()
+                                        if viewModel.vibrationEnabled {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+
+                                
+                                // Speak Numbers Toggle
+                                Button(action: {
+                                    viewModel.speakSpaces.toggle()
+                                    HapticManager.shared.triggerHaptic(for: .choose)
+                                }) {
+                                    HStack {
+                                        Text("Speak Numbers")
+                                        Spacer()
+                                        if viewModel.speakSpaces {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                                
+                                Menu("Game Speed") {
+                                    ForEach(GameSpeedOption.allCases, id: \.self) { speed in
+                                        Button {
+                                            viewModel.gameSpeed = speed
+                                            HapticManager.shared.triggerHaptic(for: .choose)
+                                        } label: {
+                                            HStack(spacing: 8) {
+                                                Label(speed.label, systemImage: speed.symbolName)
+                                                    .symbolRenderingMode(.palette)
+                                                    .foregroundStyle(speed.symbolColor, .gray)
+                                                
+                                                Spacer()
+                                                
+                                                // Checkmark if this speed is selected
+                                                if viewModel.gameSpeed == speed {
+                                                    Image(systemName: "checkmark")
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                Menu("Bingo Space Color") {
+                                        ForEach(BingoColor.allCases) { colorOption in
+                                            Button {
+                                                viewModel.bingoSpaceColorChoice = colorOption.rawValue
+                                            } label: {
+                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
+                                                    .symbolRenderingMode(.palette)
+                                                    .foregroundStyle(colorOption.color, .white)
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Another sub-menu for “Dauber Color”:
+                                    Menu("Dauber Color") {
+                                        ForEach(BingoColor.allCases) { colorOption in
+                                            Button {
+                                                viewModel.dauberColorChoice = colorOption.rawValue
+                                            } label: {
+                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
+                                                    .symbolRenderingMode(.palette)
+                                                    .foregroundStyle(colorOption.color, .white)
+                                            }
+                                        }
+                                    }
+                                
+                            } label: {
+                                Image(systemName: "slider.horizontal.3") // SF Symbol for settings
+                                    .font(.largeTitle)
+                                    .foregroundColor(viewModel.isGameActive ? .yellow.opacity(0.25) : .yellow)
+                            }
+                            .disabled(viewModel.isGameActive)
+
                             // MARK: Edit Cards
                             Button(action: {
                                 showFavoritesSheet.toggle()
@@ -70,10 +168,10 @@ struct BingoView: View {
                                 }
                                 .padding(4)
                             }
-                            .offset(x: viewModel.isGameActive ? 0 : (cardSize / 2) + 35)
-                            .animation(.spring, value: viewModel.isGameActive)
                             .disabled(viewModel.isGameActive) // Prevent changing during an active game
                         }
+                        .offset(x: viewModel.isGameActive ? 0 : (cardSize / 2) + 35)
+                        .animation(.spring, value: viewModel.isGameActive)
                         
                         // MARK: Bingo Card
                         ZStack {
@@ -214,126 +312,36 @@ struct BingoView: View {
                                         .foregroundColor(.white)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.1)
-                                        .padding(12)
-                                        .background(viewModel.isGameActive ? .red.opacity(0.25) : .red)
+                                        .padding(8)
+                                        .background(viewModel.isGameActive ? .green.opacity(0.25) : .green)
                                         .cornerRadius(15)
                                         .frame(maxHeight: 44)
                                 }
                                 .disabled(viewModel.isGameActive)
                                 
+                                Spacer()
+                                
                                 if isAuthenticated {
                                     Button(action: {
                                         showGameCenter = true
                                     }) {
-                                        Image(systemName: "list.bullet.circle.fill")
-                                            .font(.largeTitle)
-                                            .foregroundStyle(viewModel.isGameActive ? .green.opacity(0.25) : .green)
+                                        Text("WINNERS")
+                                            .font(.subheadline).bold()
+                                            .foregroundColor(.white)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.1)
+                                            .padding(8)
+                                            .background(viewModel.isGameActive ? .purple.opacity(0.25) : .purple)
+                                            .cornerRadius(15)
+                                            .frame(maxHeight: 44)
+
+//                                        Image(systemName: "list.bullet.circle.fill")
+//                                            .font(.largeTitle)
+//                                            .foregroundStyle(viewModel.isGameActive ? .green.opacity(0.25) : .green)
                                     }
-                                    .padding(.horizontal, 8)
                                     .disabled(viewModel.isGameActive)
                                 }
-                                
-                                Spacer()
-
-                                
-                                // MARK: SETTINGS MENU
-                                Menu {
-                                    // AutoMark Toggle
-                                    Button(action: {
-                                        viewModel.autoMark.toggle()
-                                        HapticManager.shared.triggerHaptic(for: .choose)
-                                    }) {
-                                        HStack {
-                                            Text("Auto-Mark")
-                                            Spacer()
-                                            if viewModel.autoMark {
-                                                Image(systemName: "checkmark")
-                                            }
-                                        }
-                                    }
-                                    
-                                    // AutoMark Toggle
-                                    Button(action: {
-                                        viewModel.vibrationEnabled.toggle()
-                                    }) {
-                                        HStack {
-                                            Text("Vibration")
-                                            Spacer()
-                                            if viewModel.vibrationEnabled {
-                                                Image(systemName: "checkmark")
-                                            }
-                                        }
-                                    }
-
-                                    
-                                    // Speak Numbers Toggle
-                                    Button(action: {
-                                        viewModel.speakSpaces.toggle()
-                                        HapticManager.shared.triggerHaptic(for: .choose)
-                                    }) {
-                                        HStack {
-                                            Text("Speak Numbers")
-                                            Spacer()
-                                            if viewModel.speakSpaces {
-                                                Image(systemName: "checkmark")
-                                            }
-                                        }
-                                    }
-                                    
-                                    Menu("Game Speed") {
-                                        ForEach(GameSpeedOption.allCases, id: \.self) { speed in
-                                            Button {
-                                                viewModel.gameSpeed = speed
-                                                HapticManager.shared.triggerHaptic(for: .choose)
-                                            } label: {
-                                                HStack(spacing: 8) {
-                                                    Label(speed.label, systemImage: speed.symbolName)
-                                                        .symbolRenderingMode(.palette)
-                                                        .foregroundStyle(speed.symbolColor, .gray)
-                                                    
-                                                    Spacer()
-                                                    
-                                                    // Checkmark if this speed is selected
-                                                    if viewModel.gameSpeed == speed {
-                                                        Image(systemName: "checkmark")
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    
-                                    Menu("Bingo Space Color") {
-                                            ForEach(BingoColor.allCases) { colorOption in
-                                                Button {
-                                                    viewModel.bingoSpaceColorChoice = colorOption.rawValue
-                                                } label: {
-                                                    Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
-                                                        .symbolRenderingMode(.palette)
-                                                        .foregroundStyle(colorOption.color, .white)
-                                                }
-                                            }
-                                        }
-                                        
-                                        // Another sub-menu for “Dauber Color”:
-                                        Menu("Dauber Color") {
-                                            ForEach(BingoColor.allCases) { colorOption in
-                                                Button {
-                                                    viewModel.dauberColorChoice = colorOption.rawValue
-                                                } label: {
-                                                    Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
-                                                        .symbolRenderingMode(.palette)
-                                                        .foregroundStyle(colorOption.color, .white)
-                                                }
-                                            }
-                                        }
-                                    
-                                } label: {
-                                    Image(systemName: "slider.horizontal.3") // SF Symbol for settings
-                                        .font(.largeTitle)
-                                        .foregroundColor(viewModel.isGameActive ? .yellow.opacity(0.25) : .yellow)
-                                }
                             }
-                            .disabled(viewModel.isGameActive)
                             
                             Spacer()
                             
