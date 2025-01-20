@@ -153,7 +153,7 @@ struct BingoView: View {
                             } label: {
                                 Image(systemName: "slider.horizontal.3") // SF Symbol for settings
                                     .font(.largeTitle)
-                                    .foregroundColor(viewModel.isGameActive ? .yellow.opacity(0.25) : .yellow)
+                                    .foregroundColor(.yellow.dimmedIf(viewModel.isGameActive))
                             }
                             .disabled(viewModel.isGameActive)
 
@@ -164,7 +164,7 @@ struct BingoView: View {
                                 VStack(spacing: 0) {
                                     Image(systemName: "square.stack") // SF Symbol for refresh
                                         .font(.title)
-                                        .foregroundColor(viewModel.isGameActive ? .yellow.opacity(0.25) : .yellow) // Disable when game is active
+                                        .foregroundColor(.yellow.dimmedIf(viewModel.isGameActive))
                                 }
                                 .padding(4)
                             }
@@ -313,7 +313,7 @@ struct BingoView: View {
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.1)
                                         .padding(8)
-                                        .background(viewModel.isGameActive ? .green.opacity(0.25) : .green)
+                                        .background(Color.gold.dimmedIf(viewModel.isGameActive))
                                         .cornerRadius(15)
                                         .frame(maxHeight: 44)
                                 }
@@ -327,17 +327,13 @@ struct BingoView: View {
                                     }) {
                                         Text("WINNERS")
                                             .font(.subheadline).bold()
-                                            .foregroundColor(.black)
+                                            .foregroundColor(.white)
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.1)
                                             .padding(8)
-                                            .background(viewModel.isGameActive ? .purple.opacity(0.25) : .purple)
+                                            .background(.purple.dimmedIf(viewModel.isGameActive))
                                             .cornerRadius(15)
                                             .frame(maxHeight: 44)
-
-//                                        Image(systemName: "list.bullet.circle.fill")
-//                                            .font(.largeTitle)
-//                                            .foregroundStyle(viewModel.isGameActive ? .green.opacity(0.25) : .green)
                                     }
                                     .disabled(viewModel.isGameActive)
                                 }
@@ -418,7 +414,9 @@ struct BingoView: View {
                 }
                 
                 // Keep the overlay in the hierarchy at all times
-                OutOfCreditsView(allowClose: viewModel.credits > viewModel.baseBet, isVisible: $showOutOfCredits, viewModel: viewModel)
+                let showLowerBetButton =  viewModel.credits >= viewModel.baseBet && viewModel.credits < (viewModel.baseBet * viewModel.betMultiplier)
+                let allowClose = viewModel.credits > viewModel.baseBet
+                OutOfCreditsView(showCloseButton: allowClose, showLowerBetButton: showLowerBetButton, isVisible: $showOutOfCredits, viewModel: viewModel)
             }
             .sheet(isPresented: $showFavoritesSheet) {
                 CardChooserView(viewModel: viewModel)
@@ -498,7 +496,7 @@ struct BingoButtonStyle: ButtonStyle {
         configuration.label
             .frame(maxWidth: .infinity, minHeight: 30, maxHeight: height) // Ensures height constraint
             .padding(.horizontal, 16)
-            .background(isDisabled ? backgroundColor.opacity(0.25) : backgroundColor)
+            .background(backgroundColor.dimmedIf(isDisabled))
             .foregroundColor(textColor)
             .cornerRadius(15)
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0) // Slight press animation
@@ -640,7 +638,7 @@ struct BingoSpaceView: View {
     var body: some View {
         ZStack {
             Rectangle()
-                .fill(isPartOfBingo ? highlightColor : .white.opacity(0.25))
+                .fill(highlightColor.dimmedIf(isPartOfBingo))
                 .overlay(
                     Rectangle()
                         .stroke(Color.black.opacity(0.75), lineWidth: 1)
@@ -735,5 +733,21 @@ struct GameCenterView: UIViewControllerRepresentable {
         func gameCenterViewControllerDidFinish(_ gameCenterViewController: GKGameCenterViewController) {
             dismissAction()
         }
+    }
+}
+
+extension Color {
+    static let gold = Color(red: 1.0, green: 0.84, blue: 0.0) // Classic gold
+    static let deepGold = Color(red: 0.85, green: 0.65, blue: 0.13) // Deeper gold, more antique
+    static let brightGold = Color(red: 1.0, green: 0.76, blue: 0.03) // Brighter, shinier gold
+    
+    
+    /// Returns a dimmed version of the color based on the provided condition.
+    ///
+    /// - Parameter isDimmed: A Boolean value indicating whether the color should be dimmed.
+    ///   If `true`, the color remains unchanged. If `false`, the color is returned with 25% opacity.
+    /// - Returns: A `Color` that is either fully opaque or dimmed based on `isDimmed`.
+    func dimmedIf(_ isDimmed: Bool) -> Color {
+        return isDimmed ? self.opacity(0.25) : self 
     }
 }

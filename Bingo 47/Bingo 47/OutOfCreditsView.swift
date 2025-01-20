@@ -9,7 +9,8 @@ import SwiftUI
 import StoreKit
 
 struct OutOfCreditsView: View {
-    var allowClose: Bool = false
+    var showCloseButton: Bool = false
+    var showLowerBetButton: Bool = false
     
     @Binding var isVisible: Bool
     @ObservedObject var viewModel: BingoViewModel
@@ -25,8 +26,11 @@ struct OutOfCreditsView: View {
             
             // **2. Animated Popup**
             VStack(spacing: 20) {
-                Text("Out of Credits?")
+                let title = showCloseButton ? "MAKE BINGO GREAT AGAIN:" : "Out of Credits?"
+                Text(title)
                     .font(.title)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.1)
                     .bold()
                     .foregroundColor(.white)
                 
@@ -41,7 +45,8 @@ struct OutOfCreditsView: View {
                         .foregroundStyle(.white)
                     Spacer()
                 } else {
-                    Text("Choose an option below to get more credits:")
+                    let subTitle = showCloseButton ? "How many credits would you like?" : "Choose an option below to get more credits:"
+                    Text(subTitle)
                         .font(.body)
                         .minimumScaleFactor(0.1)
                         .bold()
@@ -88,19 +93,19 @@ struct OutOfCreditsView: View {
                     }
                     
                     VStack {
-                        Text(allowClose ? "" : "\(viewModel.freeRefillAmount)")
+                        Text(showCloseButton ? "" : "\(viewModel.freeRefillAmount)")
                             .font(.body).bold()
                             .foregroundStyle(.white)
                         
                         Button(action: {
-                            if !allowClose { // their out of credits
+                            if !showCloseButton { // their out of credits
                                 viewModel.resetCredits()
                             }
                             withAnimation(.spring()) {
                                 isVisible = false
                             }
                         }) {
-                            Text(allowClose ? "Close" : "Free!")
+                            Text(showCloseButton ? "Close" : "Free!")
                                 .font(.headline).bold()
                                 .foregroundColor(.white)
                                 .padding()
@@ -109,7 +114,7 @@ struct OutOfCreditsView: View {
                                 .cornerRadius(8)
                         }
                         
-                        if viewModel.credits >= viewModel.baseBet {
+                        if showLowerBetButton {
                             Button(action: {
                                 viewModel.lowerBetToMaxPossible()
                                 withAnimation(.spring()) {
