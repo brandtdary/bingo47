@@ -117,7 +117,6 @@ class BingoViewModel: ObservableObject {
     private(set) var bonusBalls: Int = 0
 
     init() {
-//        authenticatePlayer()
         resetGame()
         loadOrGenerateCards()
         
@@ -381,36 +380,25 @@ class BingoViewModel: ObservableObject {
     }
     
     // MARK: Game Center
-    
-    func authenticatePlayer() {
-//        let localPlayer = GKLocalPlayer.local
-//        localPlayer.authenticateHandler = { viewController, error in
-//            if let viewController = viewController {
-//                DispatchQueue.main.async {
-//                    if let rootVC = UIApplication.shared.windows.first?.rootViewController {
-//                        rootVC.present(viewController, animated: true)
-//                    }
-//                }
-//            } else if localPlayer.isAuthenticated {
-//                self.isAuthenticated = true
-//            } else {
-//                print("Game Center authentication failed: \(error?.localizedDescription ?? "Unknown error")")
-//            }
-//        }
-    }
-
-    
     func submitScoreToLeaderboard(score: Int) {
-        let scoreReporter = GKScore(leaderboardIdentifier: "com.gudmilk.bingo47.leaderboards.credits")
-        scoreReporter.value = Int64(score) // Convert to Int64 as required by GameKit
-        
-        GKScore.report([scoreReporter]) { error in
-            if let error = error {
-                print("Error submitting score: \(error.localizedDescription)")
-            } else {
-                print("Score submitted successfully!")
+        let leaderboardID = "com.gudmilk.bingo47.leaderboards.credits" // Replace with your leaderboard's ID
+        guard GKLocalPlayer.local.isAuthenticated else {
+                print("Local player is not authenticated")
+                return
             }
-        }
+
+            GKLeaderboard.submitScore(
+                score,
+                context: 0,
+                player: GKLocalPlayer.local,
+                leaderboardIDs: [leaderboardID]
+            ) { error in
+                if let error = error {
+                    print("Error submitting score: \(error.localizedDescription)")
+                } else {
+                    print("Score submitted successfully!")
+                }
+            }
     }
     
     // MARK: USER ACTIONS

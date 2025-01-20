@@ -226,9 +226,10 @@ struct BingoView: View {
                                     }) {
                                         Image(systemName: "list.bullet.circle.fill")
                                             .font(.largeTitle)
-                                            .foregroundStyle(.green)
+                                            .foregroundStyle(viewModel.isGameActive ? .green.opacity(0.25) : .green)
                                     }
-                                    .padding(.leading, 12)
+                                    .padding(.horizontal, 8)
+                                    .disabled(viewModel.isGameActive)
                                 }
                                 
                                 Spacer()
@@ -337,13 +338,11 @@ struct BingoView: View {
                             
                             HStack {
                                 HStack(spacing: 8) {
-                                    Image(systemName: "47.circle.fill") // SF Symbol for money
+                                    Image("47bill")
                                         .resizable()
                                         .scaledToFit()
-                                        .frame(width: 24, height: 24)
-                                        .foregroundColor(.green) // Highlighting it in gold/yellow
                                     
-                                    Text("\(viewModel.jackpotStorage[viewModel.betMultiplier, default: 0]) x $47")
+                                    Text(" x \(viewModel.jackpotStorage[viewModel.betMultiplier, default: 0])")
                                         .font(.headline)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.25)
@@ -415,7 +414,7 @@ struct BingoView: View {
                 CardChooserView(viewModel: viewModel)
             }
             .sheet(isPresented: $showGameCenter) {
-                GameCenterView(viewState: .leaderboards) {
+                GameCenterView() {
                     showGameCenter = false
                 }
             }
@@ -423,13 +422,16 @@ struct BingoView: View {
                 VStack(spacing: 20) {
                     Text("🎉 Jackpot Received! 🎉")
                         .font(.largeTitle)
+                        .lineLimit(1)
                         .fontWeight(.bold)
 
                     Text("You won \(viewModel.lastJackpotCount) x $47 bills.")
                         .font(.title2)
+                        .lineLimit(1)
 
                     Text("Total Winnings: \(viewModel.lastJackpotAmount) credits")
                         .font(.title)
+                        .lineLimit(1)
                         .foregroundColor(.green)
 
                     Button("COLLECT") {
@@ -438,6 +440,7 @@ struct BingoView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(.green)
                 }
+                .minimumScaleFactor(0.1)
                 .padding()
             }
             .onAppear {
@@ -688,13 +691,12 @@ enum BingoColor: String, CaseIterable, Identifiable {
 // MARK: Game Center Views
 
 struct GameCenterView: UIViewControllerRepresentable {
-    let viewState: GKGameCenterViewControllerState
     let dismissAction: () -> Void
+    let leaderBoardID = "com.gudmilk.bingo47.leaderboards.credits"
 
     func makeUIViewController(context: Context) -> GKGameCenterViewController {
-        let gameCenterVC = GKGameCenterViewController()
+        let gameCenterVC = GKGameCenterViewController(leaderboardID: leaderBoardID, playerScope: .global, timeScope: .today)
         gameCenterVC.gameCenterDelegate = context.coordinator
-        gameCenterVC.viewState = viewState
         return gameCenterVC
     }
 
