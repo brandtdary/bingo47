@@ -54,7 +54,7 @@ class BingoViewModel: ObservableObject {
     @AppStorage("savedBingoCards") private var savedBingoCardData: String = ""
     @AppStorage("favoriteBingoCards") private var favoriteBingoCardsData: String = ""
     @AppStorage("bingoSpaceColorChoice") var bingoSpaceColorChoice: String = BingoColor.yellow.rawValue
-    @AppStorage("dauberColorChoice") var dauberColorChoice: String = BingoColor.green.rawValue
+    @AppStorage("dauberColorChoice") var dauberColorChoice: String = BingoColor.red.rawValue
     @AppStorage("numberOfGamesPlayed") var numberOfGamesPlayed: Int = 0
     @AppStorage("numberOfBingos") var numberOfBingos: Int = 0
     
