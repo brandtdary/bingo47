@@ -28,7 +28,7 @@ struct BingoView: View {
             let safeAreaBottom = geometry.safeAreaInsets.bottom
             let totalWidth = geometry.size.width * 0.95
             let totalHeight = geometry.size.height - (safeAreaTop + safeAreaBottom) // Adjust for safe area
-            let cardSize = min(totalHeight * 0.35, 500) // Prioritize height, but limit to max 500px
+            let cardSize = min(totalHeight * 0.30, 500) // Prioritize height, but limit to max 500px
             
             ZStack {
                 // Background color
@@ -53,7 +53,7 @@ struct BingoView: View {
                     }
                     
                     // Called Numbers Grid
-                    BingoBoardView(calledSpaces: viewModel.calledSpaces, allSpaces: viewModel.allSpaces, totalWidth: totalWidth * 0.75, lastCalledNumber: viewModel.currentSpace)
+                    BingoBoardView(calledSpaces: viewModel.calledSpaces, allSpaces: viewModel.allSpaces, totalWidth: totalWidth * 0.65, lastCalledNumber: viewModel.currentSpace)
                         .padding(.bottom, 8)
                     
                     ZStack {
@@ -480,7 +480,7 @@ struct BingoButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .frame(maxWidth: .infinity, minHeight: height, maxHeight: height) // Ensures height constraint
+            .frame(maxWidth: .infinity, minHeight: 30, maxHeight: height) // Ensures height constraint
             .padding(.horizontal, 16)
             .background(isDisabled ? backgroundColor.opacity(0.25) : backgroundColor)
             .foregroundColor(textColor)
