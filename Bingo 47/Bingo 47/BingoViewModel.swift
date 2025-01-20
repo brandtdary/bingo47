@@ -32,6 +32,12 @@ class BingoViewModel: ObservableObject {
     @Published var lastJackpotAmount: Int = 0
     @Published var lastJackpotCount: Int = 0
     
+    var bonusSpaceCalled: Bool {
+        let bonusSpaceCalled = hasSpaceBeenCalled(BingoViewModel.bonusSpaceID)
+        print("Bonus Space Called: bonusSpaceCalled")
+        return bonusSpaceCalled
+    }
+    
     // MARK: Game Center
     @Published var isAuthenticated = false
 
@@ -295,7 +301,7 @@ class BingoViewModel: ObservableObject {
         calledSpaces = []
         currentSpace = nil
         preGeneratedSpaces = []
-        currentGameWinnings = 0 // Reset winnings for the next game
+        currentGameWinnings = 0
         
         for index in bingoCards.indices {
             bingoCards[index].markedSpaces.removeAll()
@@ -755,6 +761,14 @@ class BingoViewModel: ObservableObject {
     }
     
     // MARK: HELPERS
+    func hasSpaceBeenCalled(_ spaceID: String) -> Bool {
+        guard isGameActive else { return false }
+        return calledSpaces.contains { $0.id == spaceID }
+    }
+    
+    func shouldShowJackpotDisplay() -> Bool  {
+        return !isGameActive || bonusSpaceCalled
+    }
     
 }
 

@@ -26,7 +26,7 @@ struct OutOfCreditsView: View {
             
             // **2. Animated Popup**
             VStack(spacing: 20) {
-                let title = showCloseButton ? "MAKE BINGO GREAT AGAIN:" : "Out of Credits?"
+                let title = showCloseButton ? "MAKE BINGO GREAT AGAIN!" : "Out of Credits?"
                 Text(title)
                     .font(.title)
                     .lineLimit(1)

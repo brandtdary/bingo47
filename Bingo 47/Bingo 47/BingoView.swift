@@ -58,6 +58,21 @@ struct BingoView: View {
                         .padding(.bottom, 8)
                     
                     ZStack {
+                        VStack(spacing: 0) {
+                            Image("47bill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: cardSize / 4)
+                            
+                            Text("x \(viewModel.jackpotStorage[viewModel.betMultiplier, default: 0])")
+                                .font(.system(size: cardSize / 10)).bold()
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.25)
+                                .foregroundColor(.white)
+                        }
+                        .offset(x: viewModel.shouldShowJackpotDisplay() ? -((cardSize / 2) + 45) : 0)
+                        .animation(.spring, value: viewModel.shouldShowJackpotDisplay())
+                        
                         VStack(spacing: 16) {
                             // MARK: SETTINGS MENU
                             Menu {
@@ -342,21 +357,6 @@ struct BingoView: View {
                             Spacer()
                             
                             HStack {
-                                VStack(spacing: 0) {
-                                    Image("47bill")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(maxWidth: 94)
-                                    
-                                    Text("x \(viewModel.jackpotStorage[viewModel.betMultiplier, default: 0])")
-                                        .font(.headline)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.25)
-                                        .foregroundColor(.white)
-                                }
-                                
-                                Spacer()
-                                                                
                                 VStack(alignment: .trailing, spacing: 0) {
                                     Text("\(viewModel.credits)")
                                         .font(.title).bold()
@@ -638,7 +638,7 @@ struct BingoSpaceView: View {
     var body: some View {
         ZStack {
             Rectangle()
-                .fill(highlightColor.dimmedIf(isPartOfBingo))
+                .fill(isPartOfBingo ? highlightColor : .white.opacity(0.25))
                 .overlay(
                     Rectangle()
                         .stroke(Color.black.opacity(0.75), lineWidth: 1)
@@ -748,6 +748,6 @@ extension Color {
     ///   If `true`, the color remains unchanged. If `false`, the color is returned with 25% opacity.
     /// - Returns: A `Color` that is either fully opaque or dimmed based on `isDimmed`.
     func dimmedIf(_ isDimmed: Bool) -> Color {
-        return isDimmed ? self.opacity(0.25) : self 
+        return isDimmed ? self.opacity(0.25) : self
     }
 }
