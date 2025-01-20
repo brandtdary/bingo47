@@ -26,7 +26,11 @@ class BingoViewModel: ObservableObject {
     @Published var isProcessingPurchase: Bool = false
     @Published var activeBingoSpaceColor: Color = .yellow
     @Published var activeDauberColor: Color = .green
-    
+    // MARK BONUS:
+    @Published var showJackpotSheet: Bool = false
+    @Published var lastJackpotAmount: Int = 0
+    @Published var lastJackpotCount: Int = 0
+
     var gameSpeed: GameSpeedOption {
         get { GameSpeedOption(rawValue: storedGameSpeed) ?? .normal }
         set { storedGameSpeed = newValue.rawValue }
@@ -55,13 +59,33 @@ class BingoViewModel: ObservableObject {
     private var lastCallTimer: Timer?
     private var preGeneratedSpaces: [BingoSpace] = [] // Store BingoSpace objects
     private let minimumBingosForPayout = 1
-    private let betMultipliers = [1, 2, 4, 8, 12, 20, 40, 80, 160, 200, 400, 800, 1200, 2000, 4000, 8000, 12000, 20000, 40000]
+    private let betMultipliers = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
     private var previousBingos = 0
+    private let jackpotStorageKey = "jackpotStorage"
     
+    var jackpotStorage: [Int: Int] {
+        get {
+            guard let storedData = UserDefaults.standard.dictionary(forKey: jackpotStorageKey) as? [String: Int] else {
+                return [:] // Default to empty dictionary
+            }
+            return storedData.reduce(into: [:]) { result, item in
+                if let key = Int(item.key) {
+                    result[key] = item.value
+                }
+            }
+        }
+        set {
+            let convertedDict = newValue.reduce(into: [String: Int]()) { result, item in
+                result[String(item.key)] = item.value
+            }
+            UserDefaults.standard.setValue(convertedDict, forKey: jackpotStorageKey)
+        }
+    }
+
     var synth: AVSpeechSynthesizer?
 
-
-    let baseBet = 25 // Base cost per game
+    let freeRefillAmount = 1000
+    let baseBet = 100 // Base cost per game
     let blackOutWinAmount = 200 // 200x their bet
 
     let allSpaces: [BingoSpace] = [
@@ -83,7 +107,9 @@ class BingoViewModel: ObservableObject {
             [2, 4, 6]  // Diagonal top-right to bottom-left
         ]
     
+    private var defaultNumbersToDraw: Int = 15
     private(set) var numbersToDraw: Int = 15
+    private(set) var bonusBalls: Int = 0
 
     init() {
         resetGame()
@@ -94,12 +120,7 @@ class BingoViewModel: ObservableObject {
         }
 
         payoutTable = generatePayoutTable()
-        
-        // MARK: TODO Update this
-        if credits < baseBet {
-            credits = 100
-        }
-        
+                
         prepareSynthesizer()
         
         // Observe app lifecycle changes
@@ -214,7 +235,7 @@ class BingoViewModel: ObservableObject {
 
     
     func resetCredits() {
-        credits = 100
+        credits = freeRefillAmount
         soundManager.playSound(.freeChips)
     }
     
@@ -367,9 +388,14 @@ class BingoViewModel: ObservableObject {
 
         credits -= baseBet * betMultiplier // Deduct credits
         resetGame() // Reset game state for a new game
+        
+#if DEBUG
+        bonusBalls = 10
+#endif
+        
+        numbersToDraw = defaultNumbersToDraw + bonusBalls
 
-        numbersToDraw = 15
-        preGeneratedSpaces = Array(allSpaces.shuffled().prefix(numbersToDraw)) // Generate exact sequence
+        preGeneratedSpaces = Array(allSpaces.shuffled().prefix(min(numbersToDraw, allSpaces.count))) // Generate exact sequence
         calledSpaces = [] // Reset called spaces
         
         self.revealNextSpace()
@@ -428,6 +454,36 @@ class BingoViewModel: ObservableObject {
         finalizeGame()
     }
     
+    private func addToJackpot() {
+        let currentCount = jackpotStorage[betMultiplier, default: 0]
+        let newCount = currentCount + betMultiplier
+        jackpotStorage[betMultiplier] = newCount
+
+        #if DEBUG
+        print("💰 Added \(betMultiplier) to jackpot for bet \(betMultiplier). Total: \(newCount)")
+        #endif
+    }
+
+    private func claimJackpot() {
+        let jackpotCount = jackpotStorage[betMultiplier, default: 0]
+        let totalPrize = jackpotCount * 47
+        
+        if jackpotCount > 0 {
+            credits += totalPrize
+            jackpotStorage[betMultiplier] = 0 // Reset jackpot
+            lastJackpotAmount = totalPrize
+            lastJackpotCount = jackpotCount
+            showJackpotSheet = true
+        }
+    }
+
+    func checkForBlackout() {
+        if bingoCards.allSatisfy({ $0.markedSpaces.count == $0.spaces.count }) {
+            claimJackpot()
+        }
+    }
+
+    
     private func revealNextSpace() {
         guard let nextSpace = preGeneratedSpaces.first else { return }
 
@@ -451,13 +507,21 @@ class BingoViewModel: ObservableObject {
     // MARK: Mark Space
     func markSpace(_ space: BingoSpace, cardID: UUID) {
         guard isGameActive else { return } // Ensure the game is active
+        guard let cardIndex = bingoCards.firstIndex(where: { $0.id == cardID }) else { return }
+        let card = bingoCards[cardIndex]
+        let numberIsOnCard = card.spaces.contains(space)
+        
         guard calledSpaces.contains(space) else {
             soundManager.playSound(.markedNotCalled)
             HapticManager.shared.triggerHaptic(for: .wrongNumber)
             return
         }
+        
+        if space.id == "47" {
+                addToJackpot()
+        }
 
-        if let index = bingoCards.firstIndex(where: { $0.id == cardID }) {
+        if numberIsOnCard, let index = bingoCards.firstIndex(where: { $0.id == cardID }) {
             var mutableCard = bingoCards[index]
             
             if !mutableCard.markedSpaces.contains(space) {
@@ -466,8 +530,9 @@ class BingoViewModel: ObservableObject {
             
             bingoCards[index] = mutableCard
             calculateResults()
-            playSoundForSpaceMarked(space, card: mutableCard)
         }
+        
+        playSoundForSpaceMarked(space, card: card)
         
         if isLastCallActive && !hasUnmarkedCalledSpaces() {
             endLastCall()
@@ -529,6 +594,9 @@ class BingoViewModel: ObservableObject {
     private func finalizeGame() {
         lastCallTimer?.invalidate()
         lastCallTimer = nil
+        
+        checkForBlackout() // Check if blackout occurred after marking
+
         isGameActive = false
         numberOfGamesPlayed += 1
         credits += currentGameWinnings
@@ -619,11 +687,11 @@ class BingoViewModel: ObservableObject {
             // New scaling logic for 6+ bingos
             switch bingos {
             case 6:
-                return betAmount * 2 // 6 bingos = 2x bet
+                return betAmount * 2
             case 7:
-                return betAmount * 4 // 7 bingos = 4x bet
+                return betAmount * 3
             case 8:
-                return betAmount * 8 // 8 bingos = 8x bet
+                return betAmount * 4 // PLUS JACKPOT
             default:
                 return betAmount * (1 << (bingos - 5)) // Exponential scaling for 9+ bingos
             }
@@ -738,8 +806,8 @@ enum GameSpeedOption: Double, CaseIterable {
     case slow = 5.0
     case normal = 2.5
     case fast = 1.5
-    case superFast = 0.75
-    case lightening = 0.25
+    case superFast = 0.5
+    case lightening = 0.1
 
     var label: String {
         switch self {

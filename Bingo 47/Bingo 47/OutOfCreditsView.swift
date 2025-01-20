@@ -83,7 +83,7 @@ struct OutOfCreditsView: View {
                     }
                     
                     VStack {
-                        Text(allowClose ? "" : "100")
+                        Text(allowClose ? "" : "\(viewModel.freeRefillAmount)")
                             .font(.body).bold()
                             .foregroundStyle(.white)
                         

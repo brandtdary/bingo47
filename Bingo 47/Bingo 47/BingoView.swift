@@ -109,11 +109,10 @@ struct BingoView: View {
                     } else {
                         
                         VStack(alignment: .trailing, spacing: 0) {
-                            let maxHeight: CGFloat = 25
-                            let ballSize = max(maxHeight, (geometry.size.width / CGFloat(viewModel.numbersToDraw + 2)))
+                            let ballSize = (geometry.size.width * 0.9) / CGFloat(viewModel.numbersToDraw)
                             if useBallIndicator {
                                 // Ball Indicator View
-                                HStack(spacing: 0) {
+                                HStack(spacing: 1) {
                                     ForEach(0..<(viewModel.numbersToDraw - viewModel.calledSpaces.count), id: \.self) { index in
                                         Circle()
                                             .fill(Color.white)
@@ -121,7 +120,7 @@ struct BingoView: View {
                                     }
                                     Spacer()
                                 }
-                                .frame(height: maxHeight * 1.1)
+                                .frame(height: ballSize * 1.1)
                                 .clipShape(Rectangle())
                                 .onTapGesture(count: 2) {
                                     useBallIndicator.toggle()
@@ -168,7 +167,7 @@ struct BingoView: View {
                                 .font(.system(size: payoutTableHeight * 0.09, weight: .bold))
                             }
                             .frame(maxWidth: .infinity)
-                            .foregroundColor(.yellow)
+                            .foregroundColor(.white)
                             .padding(.horizontal)
                             .padding(.top, 8)
 
@@ -186,7 +185,7 @@ struct BingoView: View {
                                 .frame(maxWidth: .infinity, minHeight: payoutTableHeight * 0.06)
                                 .padding(.horizontal)
                                 .background(isHighlighted ? Color.yellow : Color.clear)
-                                .foregroundColor(isHighlighted ? .red : .yellow)
+                                .foregroundColor(isHighlighted ? .red : .white)
                             }
                             Spacer()
                         }
@@ -208,11 +207,11 @@ struct BingoView: View {
                                 }) {
                                     Text("BUY")
                                         .font(.subheadline).bold()
-                                        .foregroundColor(.black)
+                                        .foregroundColor(.white)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.1)
                                         .padding(12)
-                                        .background(viewModel.isGameActive ? .green.opacity(0.25) : .green)
+                                        .background(viewModel.isGameActive ? .red.opacity(0.25) : .red)
                                         .cornerRadius(15)
                                         .frame(maxHeight: 44)
                                 }
@@ -323,6 +322,22 @@ struct BingoView: View {
                             Spacer()
                             
                             HStack {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "47.circle.fill") // SF Symbol for money
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(.green) // Highlighting it in gold/yellow
+                                    
+                                    Text("\(viewModel.jackpotStorage[viewModel.betMultiplier, default: 0]) x $47")
+                                        .font(.headline)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.25)
+                                        .foregroundColor(.white)
+                                }
+                                
+                                Spacer()
+                                                                
                                 VStack(alignment: .trailing, spacing: 0) {
                                     Text("\(viewModel.credits)")
                                         .font(.title).bold()
@@ -336,8 +351,8 @@ struct BingoView: View {
                                         .minimumScaleFactor(0.15)
                                         .foregroundStyle(Color.white)
                                 }
+                                .padding(.leading, 12) // Ensures spacing on smaller screens
                             }
-                            .padding(.leading, 12) // Ensures spacing on smaller screens
 
                             Spacer()
                             
@@ -351,7 +366,7 @@ struct BingoView: View {
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.1)
                                     }
-                                    .buttonStyle(BingoButtonStyle(backgroundColor: .yellow, textColor: .black, height: 44, isDisabled: viewModel.isGameActive))
+                                    .buttonStyle(BingoButtonStyle(backgroundColor: .red, textColor: .white, height: 44, isDisabled: viewModel.isGameActive))
                                     .disabled(viewModel.isGameActive)
 
                                     Button(action: {
@@ -368,7 +383,7 @@ struct BingoView: View {
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.1)
                                     }
-                                    .buttonStyle(BingoButtonStyle(backgroundColor: .yellow, textColor: .black, height: 55, isDisabled: viewModel.isGameActive))
+                                    .buttonStyle(BingoButtonStyle(backgroundColor: .red, textColor: .white, height: 55, isDisabled: viewModel.isGameActive))
                                     .disabled(viewModel.isGameActive)
                                 }
                             }
@@ -384,6 +399,26 @@ struct BingoView: View {
             }
             .sheet(isPresented: $showFavoritesSheet) {
                 CardChooserView(viewModel: viewModel)
+            }
+            .sheet(isPresented: $viewModel.showJackpotSheet) {
+                VStack(spacing: 20) {
+                    Text("🎉 Jackpot Received! 🎉")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+
+                    Text("You won \(viewModel.lastJackpotCount) x $47 bills.")
+                        .font(.title2)
+
+                    Text("Total Winnings: \(viewModel.lastJackpotAmount) credits")
+                        .font(.title)
+                        .foregroundColor(.green)
+
+                    Button("Thanks") {
+                        viewModel.showJackpotSheet = false
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding()
             }
         }
     }
@@ -559,7 +594,7 @@ struct BingoSpaceView: View {
                 if isLastCallActive && isCalled {
                     Circle()
                         .stroke(
-                            Color.green,
+                            dauberColor,
                             style: StrokeStyle(lineWidth: 3, dash: [4, 4])
                         )
                         .frame(width: spaceSize * 0.9, height: spaceSize * 0.9)
