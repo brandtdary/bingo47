@@ -6,13 +6,16 @@
 //
 
 import SwiftUI
+import GameKit
 
 struct BingoView: View {
     @StateObject private var viewModel = BingoViewModel()
 
     @State private var showOutOfCredits = false
     @State private var showFavoritesSheet = false
-    
+    @State private var showGameCenter = false
+    @State private var isAuthenticated = false
+
     // MARK: Ads
     @State private var isAdLoaded: Bool = false
     @State private var gamesPlayedThisSession: Int = 0
@@ -217,6 +220,17 @@ struct BingoView: View {
                                 }
                                 .disabled(viewModel.isGameActive)
                                 
+                                if isAuthenticated {
+                                    Button(action: {
+                                        showGameCenter = true
+                                    }) {
+                                        Image(systemName: "list.bullet.circle.fill")
+                                            .font(.largeTitle)
+                                            .foregroundStyle(.green)
+                                    }
+                                    .padding(.leading, 12)
+                                }
+                                
                                 Spacer()
 
                                 
@@ -400,6 +414,11 @@ struct BingoView: View {
             .sheet(isPresented: $showFavoritesSheet) {
                 CardChooserView(viewModel: viewModel)
             }
+            .sheet(isPresented: $showGameCenter) {
+                GameCenterView(viewState: .leaderboards) {
+                    showGameCenter = false
+                }
+            }
             .sheet(isPresented: $viewModel.showJackpotSheet) {
                 VStack(spacing: 20) {
                     Text("🎉 Jackpot Received! 🎉")
@@ -421,12 +440,33 @@ struct BingoView: View {
                 }
                 .padding()
             }
+            .onAppear {
+                authenticateUser()
+            }
         }
     }
     
     private func showStore() {
         showOutOfCredits = true
     }
+    
+    func authenticateUser() {
+            let localPlayer = GKLocalPlayer.local
+            localPlayer.authenticateHandler = { viewController, error in
+                if let viewController = viewController {
+                    // Present the Game Center login view controller
+                    if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                        scene.windows.first?.rootViewController?.present(viewController, animated: true)
+                    }
+                } else if localPlayer.isAuthenticated {
+                    isAuthenticated = true
+                    // Enable Game Center features
+                } else {
+                    // Handle authentication failure
+                    isAuthenticated = false
+                }
+            }
+        }
 }
 
 struct BingoButtonStyle: ButtonStyle {
@@ -641,6 +681,40 @@ enum BingoColor: String, CaseIterable, Identifiable {
             // Just return black by default (or any fallback) if code calls this directly.
             // The real random picking is done in the ViewModel.
             return .black
+        }
+    }
+}
+
+// MARK: Game Center Views
+
+struct GameCenterView: UIViewControllerRepresentable {
+    let viewState: GKGameCenterViewControllerState
+    let dismissAction: () -> Void
+
+    func makeUIViewController(context: Context) -> GKGameCenterViewController {
+        let gameCenterVC = GKGameCenterViewController()
+        gameCenterVC.gameCenterDelegate = context.coordinator
+        gameCenterVC.viewState = viewState
+        return gameCenterVC
+    }
+
+    func updateUIViewController(_ uiViewController: GKGameCenterViewController, context: Context) {
+        // No update code needed
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(dismissAction: dismissAction)
+    }
+
+    class Coordinator: NSObject, GKGameCenterControllerDelegate {
+        let dismissAction: () -> Void
+
+        init(dismissAction: @escaping () -> Void) {
+            self.dismissAction = dismissAction
+        }
+
+        func gameCenterViewControllerDidFinish(_ gameCenterViewController: GKGameCenterViewController) {
+            dismissAction()
         }
     }
 }

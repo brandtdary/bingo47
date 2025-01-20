@@ -9,6 +9,7 @@
 import SwiftUI
 import AVFoundation
 import StoreKit
+import GameKit
 
 // ViewModel to handle the game logic
 class BingoViewModel: ObservableObject {
@@ -26,10 +27,13 @@ class BingoViewModel: ObservableObject {
     @Published var isProcessingPurchase: Bool = false
     @Published var activeBingoSpaceColor: Color = .yellow
     @Published var activeDauberColor: Color = .green
-    // MARK BONUS:
+    // MARK: BONUS
     @Published var showJackpotSheet: Bool = false
     @Published var lastJackpotAmount: Int = 0
     @Published var lastJackpotCount: Int = 0
+    
+    // MARK: Game Center
+    @Published var isAuthenticated = false
 
     var gameSpeed: GameSpeedOption {
         get { GameSpeedOption(rawValue: storedGameSpeed) ?? .normal }
@@ -113,6 +117,7 @@ class BingoViewModel: ObservableObject {
     private(set) var bonusBalls: Int = 0
 
     init() {
+//        authenticatePlayer()
         resetGame()
         loadOrGenerateCards()
         
@@ -375,6 +380,39 @@ class BingoViewModel: ObservableObject {
         return BingoCard(rows: 3, columns: 3, spaces: spaces)
     }
     
+    // MARK: Game Center
+    
+    func authenticatePlayer() {
+//        let localPlayer = GKLocalPlayer.local
+//        localPlayer.authenticateHandler = { viewController, error in
+//            if let viewController = viewController {
+//                DispatchQueue.main.async {
+//                    if let rootVC = UIApplication.shared.windows.first?.rootViewController {
+//                        rootVC.present(viewController, animated: true)
+//                    }
+//                }
+//            } else if localPlayer.isAuthenticated {
+//                self.isAuthenticated = true
+//            } else {
+//                print("Game Center authentication failed: \(error?.localizedDescription ?? "Unknown error")")
+//            }
+//        }
+    }
+
+    
+    func submitScoreToLeaderboard(score: Int) {
+        let scoreReporter = GKScore(leaderboardIdentifier: "com.gudmilk.bingo47.leaderboards.credits")
+        scoreReporter.value = Int64(score) // Convert to Int64 as required by GameKit
+        
+        GKScore.report([scoreReporter]) { error in
+            if let error = error {
+                print("Error submitting score: \(error.localizedDescription)")
+            } else {
+                print("Score submitted successfully!")
+            }
+        }
+    }
+    
     // MARK: USER ACTIONS
     
     // MARK: PLAY GAME
@@ -601,6 +639,8 @@ class BingoViewModel: ObservableObject {
         isGameActive = false
         numberOfGamesPlayed += 1
         credits += currentGameWinnings
+        
+        submitScoreToLeaderboard(score: credits)
     }
     
     func handleGameEnd() {
