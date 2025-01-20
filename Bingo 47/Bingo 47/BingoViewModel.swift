@@ -589,6 +589,9 @@ class BingoViewModel: ObservableObject {
         if nextSpace.isFreeSpace {
             soundManager.playSound(.welcome)
             HapticManager.shared.triggerHaptic(for: .choose)
+        } else if isBonusSpace(nextSpace) {
+            HapticManager.shared.triggerHaptic(for: .bingo)
+            SoundManager.shared.playSound(.go)
         } else if previousBingos < currentBingos {
             soundManager.playSound(.bingo)
             HapticManager.shared.triggerHaptic(for: .bingo)
@@ -768,6 +771,10 @@ class BingoViewModel: ObservableObject {
     
     func shouldShowJackpotDisplay() -> Bool  {
         return !isGameActive || bonusSpaceCalled
+    }
+    
+    func isBonusSpace(_ space: BingoSpace) -> Bool {
+        return space.id == BingoViewModel.bonusSpaceID
     }
     
 }
