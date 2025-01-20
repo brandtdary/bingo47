@@ -43,12 +43,12 @@ struct OutOfCreditsView: View {
                 } else {
                     Text("Choose an option below to get more credits:")
                         .font(.body)
+                        .minimumScaleFactor(0.1)
                         .bold()
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center) // Ensures the text is centered
                         .frame(maxWidth: .infinity, alignment: .center) // Expands and centers in its parent view
                     
-                    // **3. Show available credit packages**
                     VStack {
                         if products.isEmpty {
                             Text("Loading products...")
@@ -58,25 +58,30 @@ struct OutOfCreditsView: View {
                             HStack(spacing: 8) {
                                 ForEach(products, id: \.id) { product in
                                     VStack {
-                                        Text("\(product.displayName)")
+                                        Text(product.displayName)
                                             .font(.headline)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.25)
                                             .foregroundColor(.white)
-                                        
+                                            .frame(maxWidth: .infinity, minHeight: 20) // Ensures uniformity in the title
+
                                         Button(action: {
                                             Task {
                                                 await viewModel.purchaseCredits(productID: product.id)
                                                 isVisible = false
                                             }
                                         }) {
-                                            Text("\(product.displayPrice)")
+                                            Text(product.displayPrice)
                                                 .font(.headline)
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.25)
                                                 .foregroundColor(.black)
-                                                .padding()
-                                                .frame(maxWidth: .infinity)
+                                                .frame(maxWidth: .infinity, minHeight: 50) // **Consistent button size**
                                                 .background(Color.yellow)
                                                 .cornerRadius(8)
                                         }
                                     }
+                                    .frame(maxWidth: .infinity, minHeight: 80) // Ensure equal size per product block
                                 }
                             }
                         }

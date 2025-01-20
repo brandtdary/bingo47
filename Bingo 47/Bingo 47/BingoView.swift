@@ -307,9 +307,9 @@ struct BingoView: View {
                                 Button(action: {
                                     showStore()
                                 }) {
-                                    Text("BUY")
+                                    Text("SHOP")
                                         .font(.subheadline).bold()
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.black)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.1)
                                         .padding(8)
@@ -327,7 +327,7 @@ struct BingoView: View {
                                     }) {
                                         Text("WINNERS")
                                             .font(.subheadline).bold()
-                                            .foregroundColor(.white)
+                                            .foregroundColor(.black)
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.1)
                                             .padding(8)
@@ -430,6 +430,12 @@ struct BingoView: View {
             }
             .sheet(isPresented: $viewModel.showJackpotSheet) {
                 VStack(spacing: 20) {
+                    Image("logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity)
+                        .padding()
+
                     Text("🎉 Jackpot Received! 🎉")
                         .font(.largeTitle)
                         .lineLimit(1)
