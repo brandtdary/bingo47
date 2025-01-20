@@ -38,19 +38,20 @@ struct BingoView: View {
                 VStack(spacing: 0) {
                     let heightOfHeader: CGFloat = 50
 
-                    if gamesPlayedThisSession > 1 {
-                        BannerAdView(isAdLoaded: $isAdLoaded)
-                            .frame(height: heightOfHeader)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                    } else {
-                        // Title
-                        Text("Bingo Tap")
-                            .font(.largeTitle)
-                            .bold()
-                            .foregroundStyle(.white)
-                            .frame(height: heightOfHeader)
-                            .frame(maxWidth: .infinity)
+                    VStack {
+                        if gamesPlayedThisSession > 1 {
+                            BannerAdView(isAdLoaded: $isAdLoaded)
+                                .frame(height: heightOfHeader)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                        } else {
+                            // Title
+                            Image("logo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: heightOfHeader)
+                        }
                     }
+                    .padding(.bottom, 4)
                     
                     // Called Numbers Grid
                     BingoBoardView(calledSpaces: viewModel.calledSpaces, allSpaces: viewModel.allSpaces, totalWidth: totalWidth * 0.65, lastCalledNumber: viewModel.currentSpace)
@@ -337,12 +338,13 @@ struct BingoView: View {
                             Spacer()
                             
                             HStack {
-                                HStack(spacing: 8) {
+                                VStack(spacing: 0) {
                                     Image("47bill")
                                         .resizable()
                                         .scaledToFit()
+                                        .frame(maxWidth: 94)
                                     
-                                    Text(" x \(viewModel.jackpotStorage[viewModel.betMultiplier, default: 0])")
+                                    Text("x \(viewModel.jackpotStorage[viewModel.betMultiplier, default: 0])")
                                         .font(.headline)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.25)
@@ -644,14 +646,15 @@ struct BingoSpaceView: View {
                         .frame(width: spaceSize * 0.9, height: spaceSize * 0.9)
                 }
             }
-            let fontSize = space.isFreeSpace ? spaceSize * 0.3 : space.id == BingoViewModel.bonusSpaceID ? spaceSize * 0.5 : spaceSize * 0.4
+            let isCenterSpace = space.id == BingoViewModel.bonusSpaceID
+            let fontSize = space.isFreeSpace ? spaceSize * 0.3 : isCenterSpace ? spaceSize * 0.6 : spaceSize * 0.4
 
             Text(space.label)
                 .font(.system(size: fontSize, weight: .bold))
                 .padding(space.isFreeSpace ? 2 : 0)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
-                .foregroundColor(space.isFreeSpace ? .white : .white)
+                .foregroundColor(isCenterSpace ? .black : .white)
         }
         .frame(width: spaceSize, height: spaceSize)
         .onTapGesture {
