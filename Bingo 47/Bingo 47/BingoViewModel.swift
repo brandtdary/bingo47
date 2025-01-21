@@ -32,6 +32,8 @@ class BingoViewModel: ObservableObject {
     @Published var lastJackpotAmount: Int = 0
     @Published var lastJackpotCount: Int = 0
     
+    @Published var shouldOfferBonusBalls: Bool = false
+    
     var bonusSpaceCalled: Bool {
         let bonusSpaceCalled = hasSpaceBeenCalled(BingoViewModel.bonusSpaceID)
         print("Bonus Space Called: bonusSpaceCalled")
