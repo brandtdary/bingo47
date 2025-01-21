@@ -58,27 +58,10 @@ final class SoundManager {
             return "mp3" // Ensure your new sound files are in this format; update if needed
         }
     }
-
-    
-    // New BackgroundMusic Enum
-    enum BackgroundMusic: String, CaseIterable {
-        case firstThreeBonus = "firstThreeBonusMusic"
-        // Add more background music cases here as needed
-
-        var fileExtension: String {
-            return "mp3" // Update if you have different file extensions
-        }
-    }
-    
-    // MARK: - Background Music
-    private var backgroundMusicPlayer: AVAudioPlayer?
-    private var isBackgroundMusicPlaying: Bool = false
-    private var currentBackgroundMusic: BackgroundMusic?
     
     private init() {
         setupAudioSession()
-        preloadAllSounds()
-        registerForNotifications()
+//        preloadAllSounds()
         registerForAppLifecycleNotifications()
     }
     
@@ -91,7 +74,7 @@ final class SoundManager {
             print("Current Audio Session Options: \(session.categoryOptions)")
 #endif
             
-            try session.setCategory(.soloAmbient)
+            try session.setCategory(.ambient)
             try session.setActive(true)
 #if DEBUG
             print("Audio session set to .ambient and activated successfully.")
@@ -103,97 +86,21 @@ final class SoundManager {
         }
     }
     
-    private func registerForNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption(_:)), name: AVAudioSession.interruptionNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange(_:)), name: AVAudioSession.routeChangeNotification, object: nil)
-    }
-    
-    @objc private func handleInterruption(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
-              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
-            return
-        }
-        
-        switch type {
-        case .began:
-            // Audio session was interrupted, pause background music
-            pauseBackgroundMusic()
-            
-        case .ended:
-            // Audio session interruption ended, try to reactivate and resume music if needed
-            do {
-                try AVAudioSession.sharedInstance().setActive(true)
-                if isBackgroundMusicPlaying {
-                    resumeBackgroundMusic()
-                }
-            } catch {
-#if DEBUG
-                print("Error reactivating audio session: \(error.localizedDescription)")
-#endif
-            }
-        @unknown default:
-            break
-        }
-    }
-    
-    @objc private func handleRouteChange(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
-              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else {
-            return
-        }
-
-        switch reason {
-        case .oldDeviceUnavailable:
-            stopBackgroundMusic()
-            try? AVAudioSession.sharedInstance().setActive(true)
-            resumeBackgroundMusic()
-            
-        case .newDeviceAvailable:
-            break
-        default:
-            break
-        }
-    }
-    
-    private func stopAllSounds() {
-        for (_, players) in soundPools {
-            players.forEach { $0.stop() }
-        }
-        stopBackgroundMusic()
-    }
-    
     private func registerForAppLifecycleNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
     }
     
     @objc private func appDidBecomeActive() {
         try? AVAudioSession.sharedInstance().setActive(true)
         refreshSoundPlayers()
-        if isBackgroundMusicPlaying {
-            resumeBackgroundMusic()
-        }
     }
     
     private func refreshSoundPlayers() {
-        // Only reload if soundPools are empty to prevent disrupting active sounds
-        if soundPools.isEmpty {
-            preloadAllSounds()
-        }
-    }
-    
-    @objc private func appDidEnterBackground() {
-        pauseBackgroundMusic()
-//        for (_, players) in soundPools {
-//            players.forEach { $0.pause() }
+//        if soundPools.isEmpty {
+//            preloadAllSounds()
 //        }
-
-        // Deactivate so we don’t hold on to the session while in background.
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
-    
+        
     // MARK: - Preload Short Sounds
     private func preloadAllSounds() {
         for sound in Sound.allCases {
@@ -279,7 +186,7 @@ final class SoundManager {
             player.play()
         } else {
             // Optional: Dynamically create a new player if we haven't hit max pool size
-            let maxPoolSize = 20 // Adjust as needed
+            let maxPoolSize = 10 // Adjust as needed
             if pool.count < maxPoolSize {
                 guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
     #if DEBUG
@@ -316,108 +223,5 @@ final class SoundManager {
         default:
             return poolSize // This is your default pool size from the SoundManager
         }
-    }
-    
-    // MARK: - Background Music Controls
-    
-    /// Plays background music from the specified file.
-    /// - Parameters:
-    ///   - music: The background music to play, defined in the BackgroundMusic enum.
-    ///   - loop: Whether the music should loop indefinitely.
-    func playBackgroundMusic(_ music: BackgroundMusic, targetVolume: Float? = nil, loop: Bool = true, fadeDuration: TimeInterval? = 2.0) {
-        // Stop any currently playing background music
-        stopBackgroundMusic()
-        
-        guard let url = Bundle.main.url(forResource: music.rawValue, withExtension: music.fileExtension) else {
-#if DEBUG
-            print("Background music file \(music.rawValue).\(music.fileExtension) not found.")
-#endif
-            return
-        }
-        
-        do {
-            backgroundMusicPlayer = try AVAudioPlayer(contentsOf: url)
-            backgroundMusicPlayer?.numberOfLoops = loop ? -1 : 0
-            backgroundMusicPlayer?.volume = 0.0 // Start at 0 for fade-in
-            backgroundMusicPlayer?.prepareToPlay()
-            backgroundMusicPlayer?.play()
-            isBackgroundMusicPlaying = true
-            currentBackgroundMusic = music
-            
-            // Perform fade-in
-            fadeInBackgroundMusic(targetVolume: targetVolume ?? 1.0, fadeDuration: fadeDuration ?? 0)
-        } catch {
-#if DEBUG
-            print("Error playing background music \(music.rawValue): \(error.localizedDescription)")
-#endif
-        }
-    }
-    
-    private func fadeInBackgroundMusic(targetVolume: Float, fadeDuration: TimeInterval) {
-        guard let player = backgroundMusicPlayer else { return }
-        
-        let steps = 20
-        let stepDuration = fadeDuration / Double(steps)
-        let volumeIncrement = targetVolume / Float(steps)
-        
-        for step in 1...steps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(step)) {
-                player.volume += volumeIncrement
-                if player.volume > targetVolume {
-                    player.volume = targetVolume
-                }
-            }
-        }
-    }
-
-    /// Pauses the currently playing background music.
-    func pauseBackgroundMusic() {
-        backgroundMusicPlayer?.pause()
-        isBackgroundMusicPlaying = false
-    }
-    
-    /// Resumes the currently paused background music.
-    func resumeBackgroundMusic() {
-        backgroundMusicPlayer?.play()
-        isBackgroundMusicPlaying = true
-    }
-    
-    /// Stops the currently playing background music.
-    func stopBackgroundMusic(fade: Bool = false, fadeDuration: TimeInterval = 2.0) {
-        guard let player = backgroundMusicPlayer, isBackgroundMusicPlaying else { return }
-        
-        if fade {
-            fadeOutBackgroundMusic(player: player, duration: fadeDuration) { [weak self] in
-                self?.backgroundMusicPlayer?.stop()
-                self?.backgroundMusicPlayer = nil
-                self?.isBackgroundMusicPlaying = false
-                self?.currentBackgroundMusic = nil
-            }
-        } else {
-            player.stop()
-            backgroundMusicPlayer = nil
-            isBackgroundMusicPlaying = false
-            currentBackgroundMusic = nil
-        }
-    }
-
-    private func fadeOutBackgroundMusic(player: AVAudioPlayer, duration: TimeInterval, completion: @escaping () -> Void) {
-        let steps = 20
-        let stepDuration = duration / Double(steps)
-        let volumeDecrement = player.volume / Float(steps)
-        
-        for step in 1...steps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(step)) {
-                player.volume -= volumeDecrement
-                if step == steps {
-                    completion()
-                }
-            }
-        }
-    }
-    /// Changes the background music to a new track.
-    /// - Parameter music: The new background music to play.
-    func changeBackgroundMusic(to music: BackgroundMusic) {
-        playBackgroundMusic(music)
     }
 }

@@ -423,7 +423,7 @@ class BingoViewModel: ObservableObject {
         resetGame() // Reset game state for a new game
         
 #if DEBUG
-        bonusBalls = 5
+        bonusBalls = 0
 #endif
         
         numbersToDraw = defaultNumbersToDraw + bonusBalls
