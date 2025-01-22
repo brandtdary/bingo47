@@ -142,30 +142,33 @@ struct BingoView: View {
                                     }
                                 }
                                 
-                                Menu("Bingo Space Color") {
-                                        ForEach(BingoColor.allCases) { colorOption in
-                                            Button {
-                                                viewModel.bingoSpaceColorChoice = colorOption.rawValue
-                                            } label: {
-                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
-                                                    .symbolRenderingMode(.palette)
-                                                    .foregroundStyle(colorOption.color, .white)
-                                            }
-                                        }
-                                    }
-                                    
-                                    // Another sub-menu for “Dauber Color”:
-                                    Menu("Dauber Color") {
-                                        ForEach(BingoColor.allCases) { colorOption in
-                                            Button {
-                                                viewModel.dauberColorChoice = colorOption.rawValue
-                                            } label: {
-                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
-                                                    .symbolRenderingMode(.palette)
-                                                    .foregroundStyle(colorOption.color, .white)
-                                            }
-                                        }
-                                    }
+                                
+                                
+                                // Not this time... we like the colors WE chose.
+//                                Menu("Bingo Space Color") {
+//                                        ForEach(BingoColor.allCases) { colorOption in
+//                                            Button {
+//                                                viewModel.bingoSpaceColorChoice = colorOption.rawValue
+//                                            } label: {
+//                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
+//                                                    .symbolRenderingMode(.palette)
+//                                                    .foregroundStyle(colorOption.color, .white)
+//                                            }
+//                                        }
+//                                    }
+//                                    
+//                                    // Another sub-menu for “Dauber Color”:
+//                                    Menu("Dauber Color") {
+//                                        ForEach(BingoColor.allCases) { colorOption in
+//                                            Button {
+//                                                viewModel.dauberColorChoice = colorOption.rawValue
+//                                            } label: {
+//                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
+//                                                    .symbolRenderingMode(.palette)
+//                                                    .foregroundStyle(colorOption.color, .white)
+//                                            }
+//                                        }
+//                                    }
                                 
                             } label: {
                                 Image(systemName: "slider.horizontal.3") // SF Symbol for settings
