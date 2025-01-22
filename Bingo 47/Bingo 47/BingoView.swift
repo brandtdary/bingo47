@@ -237,7 +237,7 @@ struct BingoView: View {
                                     }
                                     Spacer()
                                 }
-                                .frame(height: ballSize * 1.1)
+                                .frame(height: 25)
                                 .clipShape(Rectangle())
                                 .onTapGesture(count: 2) {
                                     useBallIndicator.toggle()
@@ -252,7 +252,7 @@ struct BingoView: View {
                                         .font(.subheadline)
                                         .foregroundStyle(Color.white)
                                 }
-                                .frame(height: 20)
+                                .frame(height: 25)
                                 .opacity(viewModel.isGameActive ? 1 : 0)
                                 .animation(.default, value: viewModel.isGameActive)
                                 .onTapGesture(count: 2) {
@@ -318,6 +318,28 @@ struct BingoView: View {
                         
                         VStack(alignment: .trailing, spacing: 0) {
                             HStack {
+                                if viewModel.showRewardedAdButton {
+                                    Button(action: {
+                                        viewModel.tryShowingRewardedAd()
+                                    }) {
+                                        HStack(spacing: 2) {
+                                            Image(systemName: "play.rectangle.fill")
+                                            Text("+\(viewModel.bonusBallsToBeRewarded) ")
+                                                .bold()
+                                            Image(systemName: "circle.fill")
+                                                .foregroundStyle(Color.white.dimmedIf(viewModel.isGameActive))
+                                        }
+                                        .font(.subheadline)
+                                        .foregroundColor(.black)
+                                        .padding(8)
+                                        .background(Color.gold.dimmedIf(viewModel.isGameActive))
+                                        .cornerRadius(15)
+                                        .frame(maxHeight: 44)
+                                        .frame(maxWidth: .infinity)
+                                    }
+                                    .disabled(viewModel.isGameActive)
+                                }
+                                
                                 // New Buy Credits Button
                                 Button(action: {
                                     showStore()
@@ -333,8 +355,6 @@ struct BingoView: View {
                                         .frame(maxHeight: 44)
                                 }
                                 .disabled(viewModel.isGameActive)
-                                
-                                Spacer()
                                 
                                 if isAuthenticated {
                                     Button(action: {
@@ -396,11 +416,23 @@ struct BingoView: View {
                                             viewModel.beginGame()
                                         }
                                     }) {
-                                        Text("PLAY")
-                                            .font(.title)
-                                            .bold()
-                                            .lineLimit(1)
-                                            .minimumScaleFactor(0.1)
+                                        HStack(spacing: 0) {
+                                            Text("PLAY")
+                                                .font(.title)
+                                                .bold()
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.1)
+                                            
+                                            if viewModel.bonusBalls > 0 {
+                                                Text(" +\(viewModel.bonusBallsToBeRewarded) ")
+                                                    .font(.subheadline)
+                                                Image(systemName: "circle.fill")
+                                                    .font(.subheadline)
+                                                    .foregroundStyle(Color.white)
+                                            }
+                                        }
+                                        
+
                                     }
                                     .buttonStyle(BingoButtonStyle(backgroundColor: .red, textColor: .white, height: 55, isDisabled: viewModel.isGameActive))
                                     .disabled(viewModel.isGameActive)
@@ -525,25 +557,24 @@ struct BingoBoardView: View {
                 let isCalled = calledSpaces.contains(space)
 
                 ZStack {
+                    // Background color logic
                     Rectangle()
                         .fill(isLastCalled ? .yellow : isCalled ? Color.red : Color.blue)
                         .aspectRatio(1, contentMode: .fit)
                         .border(Color.white, width: borderWidth) // Dynamically sized border
                     
+                    // Foreground logic
                     if isCalled {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: columnWidth * 0.55, weight: .bold)) // Scale text
-                            .lineLimit(1) // Prevent multi-line wrapping
-                            .minimumScaleFactor(0.5) // Shrink text instead of wrapping
+                        Text(space.label) // Show number if called
+                            .font(.system(size: columnWidth * 0.55, weight: .bold))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
                             .foregroundColor(.white)
                             .shadow(color: isLastCalled ? .clear : .black, radius: 0.5, x: 1, y: 1)
                     } else {
-                        Text(space.label)
-                            .font(.system(size: columnWidth * 0.55, weight: .bold)) // Scale text
-                            .lineLimit(1) // Prevent multi-line wrapping
-                            .minimumScaleFactor(0.5) // Shrink text instead of wrapping
+                        Image(systemName: "star.fill") // Show star if uncalled
+                            .font(.system(size: columnWidth * 0.55, weight: .bold))
                             .foregroundColor(.white)
-                            .shadow(color: isLastCalled ? .clear : .black, radius: 0.5, x: 1, y: 1)
                     }
                 }
             }

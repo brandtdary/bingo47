@@ -80,9 +80,9 @@ final class SoundManager {
             print("Audio session set to .ambient and activated successfully.")
 #endif
         } catch {
-            #if DEBUG
+#if DEBUG
             print("Failed to set up audio session: \(error.localizedDescription)")
-            #endif
+#endif
         }
     }
     
@@ -166,7 +166,7 @@ final class SoundManager {
     }
     
     // MARK: - Play Short Sound
-    func playSound(_ sound: Sound) {
+    func playSound(_ sound:  Sound) {
         // If there's no pool or it's empty, create it now
         if soundPools[sound] == nil || soundPools[sound]!.isEmpty {
             preloadSound(sound, poolSize: decidePoolSize(for: sound))

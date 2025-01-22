@@ -27,16 +27,16 @@ class BingoViewModel: ObservableObject {
     @Published var isProcessingPurchase: Bool = false
     @Published var activeBingoSpaceColor: Color = .yellow
     @Published var activeDauberColor: Color = .green
+    
     // MARK: BONUS
     @Published var showJackpotSheet: Bool = false
     @Published var lastJackpotAmount: Int = 0
     @Published var lastJackpotCount: Int = 0
     
-    @Published var shouldOfferBonusBalls: Bool = false
+    @Published var showRewardedAdButton: Bool = false
     
     var bonusSpaceCalled: Bool {
         let bonusSpaceCalled = hasSpaceBeenCalled(BingoViewModel.bonusSpaceID)
-        print("Bonus Space Called: bonusSpaceCalled")
         return bonusSpaceCalled
     }
     
@@ -75,6 +75,12 @@ class BingoViewModel: ObservableObject {
     private var previousBingos = 0
     private let jackpotStorageKey = "jackpotStorage"
     static let bonusSpaceID = "47"
+    
+    let rewardAdUnitID = "ca-app-pub-3940256099942544/1712485313" // TEST
+//    let rewardAdUnitID = "ca-app-pub-6362408680341882/7080298722" // REAL
+    
+    @MainActor
+    private(set) var rewardedAdViewModel: RewardedAdViewModel?
     
     var jackpotStorage: [Int: Int] {
         get {
@@ -120,13 +126,18 @@ class BingoViewModel: ObservableObject {
             [2, 4, 6]  // Diagonal top-right to bottom-left
         ]
     
-    private let defaultNumbersToDraw: Int = 17
-    private(set) var numbersToDraw: Int = 17
+    private let defaultNumbersToDraw: Int = 15
+    private(set) var numbersToDraw: Int = 15
     private(set) var bonusBalls: Int = 0
+    @AppStorage("bonusBallCount") private(set) var bonusBallsToBeRewarded: Int = 5
 
     init() {
         resetGame()
         loadOrGenerateCards()
+        
+        Task { @MainActor in
+            self.rewardedAdViewModel = RewardedAdViewModel(adUnitID: rewardAdUnitID)
+        }
         
         Task {
             await fetchIAPProducts()
@@ -424,11 +435,14 @@ class BingoViewModel: ObservableObject {
         credits -= baseBet * betMultiplier // Deduct credits
         resetGame() // Reset game state for a new game
         
-#if DEBUG
-        bonusBalls = 0
-#endif
+//#if DEBUG
+//        bonusBalls = 0
+//#endif
         
         numbersToDraw = defaultNumbersToDraw + bonusBalls
+        bonusBalls = 0
+        
+        print("🎉 Number to draw: \(numbersToDraw)")
 
         preGeneratedSpaces = Array(allSpaces.shuffled().prefix(min(numbersToDraw, allSpaces.count))) // Generate exact sequence
         calledSpaces = [] // Reset called spaces
@@ -639,7 +653,21 @@ class BingoViewModel: ObservableObject {
         numberOfGamesPlayed += 1
         credits += currentGameWinnings
         
+        if canShowRewardedAd {
+            showRewardedAdButton = true
+        }
+        
         submitScoreToLeaderboard(score: credits)
+    }
+    
+    @MainActor
+    func tryShowingRewardedAd() {
+        rewardedAdViewModel?.showAd { [weak self] in
+            guard let self = self else { return }
+            
+            self.bonusBalls += bonusBallsToBeRewarded // ✅ Reward the player
+            self.showRewardedAdButton = false // ✅ Hide button after watching
+        }
     }
     
     func handleGameEnd() {
@@ -659,7 +687,7 @@ class BingoViewModel: ObservableObject {
     }
     
     func labelForSpeach(space: BingoSpace) -> String {
-        let numberString = space.label
+//        let numberString = space.label
         return space.label
     }
 
@@ -779,6 +807,10 @@ class BingoViewModel: ObservableObject {
         return space.id == BingoViewModel.bonusSpaceID
     }
     
+    
+    var canShowRewardedAd: Bool {
+        return numberOfGamesPlayed > 0 && numberOfGamesPlayed % 3 == 0
+    }
 }
 
 extension BingoViewModel {
@@ -928,4 +960,15 @@ struct Payout: Identifiable {
     let id = UUID() // Unique identifier for SwiftUI usage
     let bingos: Int // Number of bingos
     let win: Int    // Win amount
+}
+
+extension UIApplication {
+    var rootViewController: UIViewController? {
+        // Get the active scene
+        guard let scene = connectedScenes.first as? UIWindowScene,
+              let window = scene.windows.first(where: { $0.isKeyWindow }) else {
+            return nil
+        }
+        return window.rootViewController
+    }
 }
