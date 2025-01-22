@@ -137,7 +137,6 @@ class BingoViewModel: ObservableObject {
     private let defaultNumbersToDraw: Int = 15
     private(set) var numbersToDraw: Int = 15
     private(set) var bonusBalls: Int = 0
-    @AppStorage("bonusBallCount") private(set) var bonusBallsToBeRewarded: Int = 10
 
     init() {
         resetGame()

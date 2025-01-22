@@ -79,47 +79,32 @@ struct BingoView: View {
                             // MARK: SETTINGS MENU
                             Menu {
                                 // AutoMark Toggle
+                                // Auto-Mark Toggle
                                 Button(action: {
                                     viewModel.autoMark.toggle()
                                     HapticManager.shared.triggerHaptic(for: .choose)
                                 }) {
-                                    HStack {
-                                        Text("Auto-Mark")
-                                        Spacer()
-                                        if viewModel.autoMark {
-                                            Image(systemName: "checkmark")
-                                        }
-                                    }
+                                    let emoji = viewModel.autoMark ? "🟩" : "⬜️"
+                                    Label("\(emoji) Auto-Mark", systemImage: "checkmark.square")
                                 }
                                 
-                                // AutoMark Toggle
+                                // Vibration Toggle
                                 Button(action: {
                                     viewModel.vibrationEnabled.toggle()
                                 }) {
-                                    HStack {
-                                        Text("Vibration")
-                                        Spacer()
-                                        if viewModel.vibrationEnabled {
-                                            Image(systemName: "checkmark")
-                                        }
-                                    }
+                                    let emoji = viewModel.vibrationEnabled ? "🟩" : "⬜️"
+                                    Label("\(emoji) Vibration", systemImage: "iphone.radiowaves.left.and.right")
                                 }
-
                                 
                                 // Speak Numbers Toggle
                                 Button(action: {
                                     viewModel.speakSpaces.toggle()
                                     HapticManager.shared.triggerHaptic(for: .choose)
                                 }) {
-                                    HStack {
-                                        Text("Speak Numbers")
-                                        Spacer()
-                                        if viewModel.speakSpaces {
-                                            Image(systemName: "checkmark")
-                                        }
-                                    }
+                                    let emoji = viewModel.speakSpaces ? "🟩" : "⬜️"
+                                    Label("\(emoji) Speak Numbers", systemImage: "speaker.wave.3.fill")
                                 }
-                                
+
                                 Menu("Game Speed") {
                                     ForEach(GameSpeedOption.allCases, id: \.self) { speed in
                                         Button {
@@ -127,25 +112,25 @@ struct BingoView: View {
                                             HapticManager.shared.triggerHaptic(for: .choose)
                                         } label: {
                                             HStack(spacing: 8) {
-//                                                if viewModel.gameSpeed == speed {
-//                                                    Image(systemName: "checkmark")
-//                                                        .foregroundStyle(speed.symbolColor, .gray)
-//                                                }
+                                                //                                                if viewModel.gameSpeed == speed {
+                                                //                                                    Image(systemName: "checkmark")
+                                                //                                                        .foregroundStyle(speed.symbolColor, .gray)
+                                                //                                                }
                                                 
-                                                let text = viewModel.gameSpeed == speed ? "🟩 " : "◻️ "
-
-                                                let color = viewModel.gameSpeed == speed ? Color.red : .gray
+                                                let text = viewModel.gameSpeed == speed ? "🟩 " : "⬜️ "
+                                                
+                                                let color = viewModel.gameSpeed == speed ? Color.red : .secondary
                                                 Label(text + speed.label, systemImage: speed.symbolName)
                                                     .symbolRenderingMode(.palette)
                                                     .foregroundStyle(speed.symbolColor, color)
                                                 
-//                                                Spacer()
-//                                                
-//                                                // Checkmark if this speed is selected
-//                                                if viewModel.gameSpeed == speed {
-//                                                    Image(systemName: "checkmark")
-//                                                        .foregroundStyle(speed.symbolColor, .gray)
-//                                                }
+                                                //                                                Spacer()
+                                                //
+                                                //                                                // Checkmark if this speed is selected
+                                                //                                                if viewModel.gameSpeed == speed {
+                                                //                                                    Image(systemName: "checkmark")
+                                                //                                                        .foregroundStyle(speed.symbolColor, .gray)
+                                                //                                                }
                                             }
                                         }
                                     }
@@ -154,30 +139,30 @@ struct BingoView: View {
                                 
                                 
                                 // Not this time... we like the colors WE chose.
-//                                Menu("Bingo Space Color") {
-//                                        ForEach(BingoColor.allCases) { colorOption in
-//                                            Button {
-//                                                viewModel.bingoSpaceColorChoice = colorOption.rawValue
-//                                            } label: {
-//                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
-//                                                    .symbolRenderingMode(.palette)
-//                                                    .foregroundStyle(colorOption.color, .white)
-//                                            }
-//                                        }
-//                                    }
-//                                    
-//                                    // Another sub-menu for “Dauber Color”:
-//                                    Menu("Dauber Color") {
-//                                        ForEach(BingoColor.allCases) { colorOption in
-//                                            Button {
-//                                                viewModel.dauberColorChoice = colorOption.rawValue
-//                                            } label: {
-//                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
-//                                                    .symbolRenderingMode(.palette)
-//                                                    .foregroundStyle(colorOption.color, .white)
-//                                            }
-//                                        }
-//                                    }
+                                //                                Menu("Bingo Space Color") {
+                                //                                        ForEach(BingoColor.allCases) { colorOption in
+                                //                                            Button {
+                                //                                                viewModel.bingoSpaceColorChoice = colorOption.rawValue
+                                //                                            } label: {
+                                //                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
+                                //                                                    .symbolRenderingMode(.palette)
+                                //                                                    .foregroundStyle(colorOption.color, .white)
+                                //                                            }
+                                //                                        }
+                                //                                    }
+                                //
+                                //                                    // Another sub-menu for “Dauber Color”:
+                                //                                    Menu("Dauber Color") {
+                                //                                        ForEach(BingoColor.allCases) { colorOption in
+                                //                                            Button {
+                                //                                                viewModel.dauberColorChoice = colorOption.rawValue
+                                //                                            } label: {
+                                //                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
+                                //                                                    .symbolRenderingMode(.palette)
+                                //                                                    .foregroundStyle(colorOption.color, .white)
+                                //                                            }
+                                //                                        }
+                                //                                    }
                                 
                             } label: {
                                 Image(systemName: "slider.horizontal.3") // SF Symbol for settings
@@ -338,7 +323,7 @@ struct BingoView: View {
                                     }) {
                                         HStack(spacing: 2) {
                                             Image(systemName: "play.rectangle.fill")
-                                            Text("+\(viewModel.bonusBallsToBeRewarded) ")
+                                            Text("+\(viewModel.bonusBallsOffer ?? 0) ")
                                                 .bold()
                                             Image(systemName: "circle.fill")
                                                 .foregroundStyle(Color.white.dimmedIf(viewModel.isGameActive))
@@ -441,7 +426,7 @@ struct BingoView: View {
                                                 .minimumScaleFactor(0.1)
                                             
                                             if viewModel.bonusBalls > 0 {
-                                                Text(" +\(viewModel.bonusBallsToBeRewarded) ")
+                                                Text(" +\(viewModel.bonusBalls) ")
                                                     .font(.subheadline)
                                                 Image(systemName: "circle.fill")
                                                     .font(.subheadline)
