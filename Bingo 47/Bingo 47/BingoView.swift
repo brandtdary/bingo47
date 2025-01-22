@@ -450,48 +450,49 @@ struct BingoView: View {
                 let allowClose = viewModel.credits > viewModel.baseBet
                 OutOfCreditsView(showCloseButton: allowClose, showLowerBetButton: showLowerBetButton, isVisible: $showOutOfCredits, viewModel: viewModel)
             }
-            .sheet(isPresented: $showFavoritesSheet) {
-                CardChooserView(viewModel: viewModel)
+        }
+        .onAppear {
+            authenticateUser()
+        }
+
+        .sheet(isPresented: $showFavoritesSheet) {
+            CardChooserView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $showGameCenter) {
+            GameCenterView() {
+                showGameCenter = false
             }
-            .sheet(isPresented: $showGameCenter) {
-                GameCenterView() {
-                    showGameCenter = false
+        }
+        .sheet(isPresented: $viewModel.showJackpotSheet) {
+            VStack(spacing: 20) {
+                Image("logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+                    .padding()
+
+                Text("🎉 Jackpot Received! 🎉")
+                    .font(.largeTitle)
+                    .lineLimit(1)
+                    .fontWeight(.bold)
+
+                Text("You won \(viewModel.lastJackpotCount) x $47 bills.")
+                    .font(.title2)
+                    .lineLimit(1)
+
+                Text("Total Winnings: \(viewModel.lastJackpotAmount) credits")
+                    .font(.title)
+                    .lineLimit(1)
+                    .foregroundColor(.green)
+
+                Button("COLLECT") {
+                    viewModel.showJackpotSheet = false
                 }
+                .buttonStyle(.borderedProminent)
+                .tint(.green)
             }
-            .sheet(isPresented: $viewModel.showJackpotSheet) {
-                VStack(spacing: 20) {
-                    Image("logo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: .infinity)
-                        .padding()
-
-                    Text("🎉 Jackpot Received! 🎉")
-                        .font(.largeTitle)
-                        .lineLimit(1)
-                        .fontWeight(.bold)
-
-                    Text("You won \(viewModel.lastJackpotCount) x $47 bills.")
-                        .font(.title2)
-                        .lineLimit(1)
-
-                    Text("Total Winnings: \(viewModel.lastJackpotAmount) credits")
-                        .font(.title)
-                        .lineLimit(1)
-                        .foregroundColor(.green)
-
-                    Button("COLLECT") {
-                        viewModel.showJackpotSheet = false
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.green)
-                }
-                .minimumScaleFactor(0.1)
-                .padding()
-            }
-            .onAppear {
-                authenticateUser()
-            }
+            .minimumScaleFactor(0.1)
+            .padding()
         }
     }
     

@@ -755,11 +755,11 @@ class BingoViewModel: ObservableObject {
             case 5:
                 return betAmount * 2
             case 6:
-                return betAmount * 3
+                return betAmount * 5
             case 7:
-                return betAmount * 4
+                return betAmount * 7
             case 8:
-                return betAmount * 5 // PLUS JACKPOT
+                return betAmount * 10
             default:
                 return betAmount * (1 << (bingos - 5)) // Exponential scaling for 9+ bingos
             }
