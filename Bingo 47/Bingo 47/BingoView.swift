@@ -206,7 +206,7 @@ struct BingoView: View {
                             }
                             
                             Text("Gud Milk").font(.system(size: cardSize / 30))
-                                .offset(y: (cardSize / 10))
+                                .offset(y: (cardSize / 9))
                                 .foregroundStyle(viewModel.isGameActive ? .clear : .white)
                         }
                     }
@@ -474,34 +474,53 @@ struct BingoView: View {
         }
         .sheet(isPresented: $viewModel.showJackpotSheet) {
             VStack(spacing: 20) {
-                Image("logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity)
-                    .padding()
 
                 Text("🎉 Jackpot Received! 🎉")
                     .font(.largeTitle)
                     .lineLimit(1)
                     .fontWeight(.bold)
+                    .foregroundColor(.white)
+                
+                Image("47bill-large")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.white)
 
                 Text("You won \(viewModel.lastJackpotCount) x $47 bills.")
                     .font(.title2)
                     .lineLimit(1)
+                    .foregroundColor(.white)
 
-                Text("Total Winnings: \(viewModel.lastJackpotAmount) credits")
+                Text("Total Winnings:")
                     .font(.title)
                     .lineLimit(1)
                     .foregroundColor(.green)
+                
+                Text("\(viewModel.lastJackpotAmount) credits")
+                    .font(.largeTitle)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.1)
+                    .foregroundColor(.white)
+                
+                Spacer()
 
                 Button("COLLECT") {
                     viewModel.showJackpotSheet = false
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.green)
+                .frame(maxWidth: .infinity, minHeight: 50) // Ensures full width and height of 50
+                .padding(.horizontal, 16) // Adds padding on the sides
             }
-            .minimumScaleFactor(0.1)
+            .onAppear {
+                SoundManager.shared.playSound(.first3)
+            }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity) // Ensure full expansion
+            .background(Color.black.ignoresSafeArea(edges: .all)) // Move before padding
+            .minimumScaleFactor(0.1)
         }
     }
     
@@ -700,7 +719,7 @@ struct BingoSpaceView: View {
                 }
             }
             let isBonusSpace = space.id == BingoViewModel.bonusSpaceID
-            let fontSize = space.isFreeSpace ? spaceSize * 0.3 : isBonusSpace ? spaceSize * 0.6 : spaceSize * 0.4
+            let fontSize = space.isFreeSpace ? spaceSize * 0.3 : isBonusSpace ? spaceSize * 0.7 : spaceSize * 0.4
 
             Text(space.label)
                 .font(.system(size: fontSize, weight: .bold))
