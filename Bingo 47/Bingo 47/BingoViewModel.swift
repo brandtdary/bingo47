@@ -722,20 +722,19 @@ class BingoViewModel: ObservableObject {
     
     @MainActor
     func tryShowingRewardedAd() {
-        rewardedAdViewModel?.showAd { [weak self] in
-            guard let self = self else { return }
-            if let offer = self.bonusBallsOffer {
+        guard let offer = self.bonusBallsOffer else { return }
+        
 #if DEBUG
         bonusBalls += offer // ✅ Reward the player
-                self.bonusBallsOffer = nil
+        self.bonusBallsOffer = nil
         showRewardedAdButton = false // ✅ Hide button after watching
         return
 #endif
-
-                
-                self.bonusBalls += offer
-                self.bonusBallsOffer = nil // Remove offer after use
-            }
+        
+        rewardedAdViewModel?.showAd { [weak self] in
+            guard let self = self else { return }
+            self.bonusBalls += offer
+            self.bonusBallsOffer = nil // Remove offer after use
         }
     }
     
@@ -816,19 +815,23 @@ class BingoViewModel: ObservableObject {
 
         if bingos <= 0 {
             return 0
-        } else if bingos <= 4 {
-            let percentage = bingos * 25
+        } else if bingos <= 2 {
+            let percentage = bingos * 50
             return (betAmount * percentage) / 100
         } else {
             switch bingos {
-            case 5:
+            case 3:
                 return betAmount * 2
-            case 6:
+            case 4:
+                return betAmount * 3
+            case 5:
                 return betAmount * 5
-            case 7:
-                return betAmount * 7
-            case 8:
+            case 6:
                 return betAmount * 10
+            case 7:
+                return betAmount * 20
+            case 8:
+                return betAmount * 47
             default:
                 return betAmount * (1 << (bingos - 5)) // Exponential scaling for 9+ bingos
             }
