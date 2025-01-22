@@ -332,7 +332,7 @@ struct BingoView: View {
                         
                         VStack(alignment: .trailing, spacing: 0) {
                             HStack {
-                                if viewModel.showRewardedAdButton {
+                                if let offer = viewModel.bonusBallsOffer {
                                     Button(action: {
                                         viewModel.tryShowingRewardedAd()
                                     }) {

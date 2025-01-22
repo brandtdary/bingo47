@@ -35,6 +35,12 @@ class BingoViewModel: ObservableObject {
     @Published var showJackpotAnimation: Bool = false
     @Published var animatedJackpotCount: Int = 0
     
+    
+    // MARK: REWARDED BONUS BALLS
+    @Published var bonusBallsOffer: Int? = nil // Current offer (5-10 balls)
+    @Published var bonusBallOfferGamesRemaining: Int = 0 // Countdown before removal
+    @Published var bonusBallOfferCooldown: Int = 0 // Countdown until next offer
+    
     @Published var showRewardedAdButton: Bool = false
     
     var bonusSpaceCalled: Bool {
@@ -140,6 +146,7 @@ class BingoViewModel: ObservableObject {
         animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
         
         Task { @MainActor in
+            self.checkBonusBallOffer()
             self.rewardedAdViewModel = RewardedAdViewModel(adUnitID: rewardAdUnitID)
         }
         
@@ -332,7 +339,7 @@ class BingoViewModel: ObservableObject {
         gameTimer = nil
     }
     
-    func toggleBetMultiplier() {
+    @MainActor func toggleBetMultiplier() {
         guard gameTimer == nil else { return } // Prevent changing bet during an active game
         
         resetGame() // Reset the game state
@@ -351,9 +358,11 @@ class BingoViewModel: ObservableObject {
         
         // Update animated jackpot count based on new bet multiplier
         animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
+        
+        checkBonusBallOffer()
     }
 
-    func lowerBetToMaxPossible() {
+    @MainActor func lowerBetToMaxPossible() {
         let sortedMultipliers = betMultipliers.sorted(by: >)
         
         if let maxMultiplier = sortedMultipliers.first(where: { baseBet * $0 <= credits }) {
@@ -369,6 +378,8 @@ class BingoViewModel: ObservableObject {
         
         // Update animated jackpot count after lowering bet
         animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
+        
+        checkBonusBallOffer()
     }
 
     
@@ -426,7 +437,7 @@ class BingoViewModel: ObservableObject {
     // MARK: USER ACTIONS
     
     // MARK: PLAY GAME
-    func beginGame() {
+    @MainActor func beginGame() {
         guard isGameActive == false else { return }
         isGameActive = true
         
@@ -444,6 +455,8 @@ class BingoViewModel: ObservableObject {
         
         numbersToDraw = defaultNumbersToDraw + bonusBalls
         bonusBalls = 0
+        
+        checkBonusBallOffer()
         
         print("🎉 Number to draw: \(numbersToDraw)")
 
@@ -709,17 +722,20 @@ class BingoViewModel: ObservableObject {
     
     @MainActor
     func tryShowingRewardedAd() {
+        rewardedAdViewModel?.showAd { [weak self] in
+            guard let self = self else { return }
+            if let offer = self.bonusBallsOffer {
 #if DEBUG
-        bonusBalls += bonusBallsToBeRewarded // ✅ Reward the player
+        bonusBalls += offer // ✅ Reward the player
+                self.bonusBallsOffer = nil
         showRewardedAdButton = false // ✅ Hide button after watching
         return
 #endif
-        
-        rewardedAdViewModel?.showAd { [weak self] in
-            guard let self = self else { return }
-            
-            self.bonusBalls += bonusBallsToBeRewarded // ✅ Reward the player
-            self.showRewardedAdButton = false // ✅ Hide button after watching
+
+                
+                self.bonusBalls += offer
+                self.bonusBallsOffer = nil // Remove offer after use
+            }
         }
     }
     
@@ -866,6 +882,21 @@ class BingoViewModel: ObservableObject {
         return true
         #endif
         return numberOfGamesPlayed > 0 && numberOfGamesPlayed % 3 == 0
+    }
+    
+    @MainActor func checkBonusBallOffer() {
+        if bonusBallOfferGamesRemaining > 0 {
+            bonusBallOfferGamesRemaining -= 1
+            if bonusBallOfferGamesRemaining == 0 {
+                bonusBallsOffer = nil
+                bonusBallOfferCooldown = Int.random(in: 5...10) // Wait before new offer
+            }
+        } else if bonusBallOfferCooldown > 0 {
+            bonusBallOfferCooldown -= 1
+        } else if rewardedAdViewModel?.isAdReady == true {
+            bonusBallsOffer = Int.random(in: 5...10)
+            bonusBallOfferGamesRemaining = 3
+        }
     }
 }
 
