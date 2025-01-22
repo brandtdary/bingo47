@@ -332,7 +332,7 @@ struct BingoView: View {
                         
                         VStack(alignment: .trailing, spacing: 0) {
                             HStack {
-                                if let offer = viewModel.bonusBallsOffer {
+//                                if viewModel.bonusBallsOffer != nil {
                                     Button(action: {
                                         viewModel.tryShowingRewardedAd()
                                     }) {
@@ -350,9 +350,12 @@ struct BingoView: View {
                                         .cornerRadius(15)
                                         .frame(maxHeight: 44)
                                         .frame(maxWidth: .infinity)
+                                        .scaleEffect(viewModel.bonusBallsOffer != nil ? 1.0 : 0.25)
+                                        .opacity(viewModel.bonusBallsOffer != nil ? 1 : 0)
+                                        .animation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0), value: viewModel.bonusBallsOffer)
                                     }
                                     .disabled(viewModel.isGameActive)
-                                }
+//                                }
                                 
                                 // New Buy Credits Button
                                 Button(action: {
