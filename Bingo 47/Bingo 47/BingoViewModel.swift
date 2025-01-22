@@ -462,8 +462,6 @@ class BingoViewModel: ObservableObject {
         preGeneratedSpaces = Array(allSpaces.shuffled().prefix(min(numbersToDraw, allSpaces.count))) // Generate exact sequence
         calledSpaces = [] // Reset called spaces
         
-        self.revealNextSpace()
-
         DispatchQueue.main.asyncAfter(deadline: .now() + (0.5)) { [weak self] in
             guard let self = self else { return }
             self.startGameTimer()
@@ -725,12 +723,12 @@ class BingoViewModel: ObservableObject {
     func tryShowingRewardedAd() {
         guard let offer = self.bonusBallsOffer else { return }
         
-#if DEBUG
-        bonusBalls += offer // ✅ Reward the player
-        self.bonusBallsOffer = nil
-        showRewardedAdButton = false // ✅ Hide button after watching
-        return
-#endif
+//#if DEBUG
+//        bonusBalls += offer // ✅ Reward the player
+//        self.bonusBallsOffer = nil
+//        showRewardedAdButton = false // ✅ Hide button after watching
+//        return
+//#endif
         
         rewardedAdViewModel?.showAd { [weak self] in
             guard let self = self else { return }
