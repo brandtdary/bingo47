@@ -401,10 +401,10 @@ class BingoViewModel: ObservableObject {
 
     func generateBingoCard() -> BingoCard {
         var spaces: [BingoSpace] = []
-        let shuffledNumbers = self.allSpaces.filter { $0.label != "47" }.shuffled()
+        let shuffledNumbers = self.allSpaces.filter { $0.label != Self.bonusSpaceID }.shuffled()
 
         for i in 0..<9 {
-            let label = (i == 4) ? "47" : "\(shuffledNumbers[i].label)"
+            let label = (i == 4) ? Self.bonusSpaceID : "\(shuffledNumbers[i].label)"
             let space = BingoSpace(id: label, isFreeSpace: false, label: label) // No more free space!
             spaces.append(space)
         }
@@ -625,7 +625,7 @@ class BingoViewModel: ObservableObject {
             return
         }
         
-        if space.id == "47" {
+        if space.id == Self.bonusSpaceID {
             addToJackpotWithAnimation()
 //                addToJackpot()
         }
