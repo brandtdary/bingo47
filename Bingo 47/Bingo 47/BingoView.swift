@@ -707,15 +707,15 @@ struct BingoSpaceView: View {
                         .frame(width: spaceSize * 0.9, height: spaceSize * 0.9)
                 }
             }
-            let isCenterSpace = space.id == BingoViewModel.bonusSpaceID
-            let fontSize = space.isFreeSpace ? spaceSize * 0.3 : isCenterSpace ? spaceSize * 0.6 : spaceSize * 0.4
+            let isBonusSpace = space.id == BingoViewModel.bonusSpaceID
+            let fontSize = space.isFreeSpace ? spaceSize * 0.3 : isBonusSpace ? spaceSize * 0.6 : spaceSize * 0.4
 
             Text(space.label)
                 .font(.system(size: fontSize, weight: .bold))
                 .padding(space.isFreeSpace ? 2 : 0)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
-                .foregroundColor(isCenterSpace ? .black : .white)
+                .foregroundColor(isBonusSpace ? .white : .white)
         }
         .frame(width: spaceSize, height: spaceSize)
         .onTapGesture {
