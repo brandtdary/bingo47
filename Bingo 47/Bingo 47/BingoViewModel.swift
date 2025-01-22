@@ -131,7 +131,7 @@ class BingoViewModel: ObservableObject {
     private let defaultNumbersToDraw: Int = 15
     private(set) var numbersToDraw: Int = 15
     private(set) var bonusBalls: Int = 0
-    @AppStorage("bonusBallCount") private(set) var bonusBallsToBeRewarded: Int = 5
+    @AppStorage("bonusBallCount") private(set) var bonusBallsToBeRewarded: Int = 10
 
     init() {
         resetGame()
@@ -709,6 +709,12 @@ class BingoViewModel: ObservableObject {
     
     @MainActor
     func tryShowingRewardedAd() {
+#if DEBUG
+        bonusBalls += bonusBallsToBeRewarded // ✅ Reward the player
+        showRewardedAdButton = false // ✅ Hide button after watching
+        return
+#endif
+        
         rewardedAdViewModel?.showAd { [weak self] in
             guard let self = self else { return }
             
@@ -856,6 +862,9 @@ class BingoViewModel: ObservableObject {
     
     
     var canShowRewardedAd: Bool {
+        #if DEBUG
+        return true
+        #endif
         return numberOfGamesPlayed > 0 && numberOfGamesPlayed % 3 == 0
     }
 }
