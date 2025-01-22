@@ -32,6 +32,8 @@ class BingoViewModel: ObservableObject {
     @Published var showJackpotSheet: Bool = false
     @Published var lastJackpotAmount: Int = 0
     @Published var lastJackpotCount: Int = 0
+    @Published var showJackpotAnimation: Bool = false
+    @Published var animatedJackpotCount: Int = 0
     
     @Published var showRewardedAdButton: Bool = false
     
@@ -103,7 +105,7 @@ class BingoViewModel: ObservableObject {
 
     var synth: AVSpeechSynthesizer?
 
-    let freeRefillAmount = 1000
+    let freeRefillAmount = 10000
     let baseBet = 100 // Base cost per game
     let blackOutWinAmount = 200 // 200x their bet
 
@@ -134,6 +136,8 @@ class BingoViewModel: ObservableObject {
     init() {
         resetGame()
         loadOrGenerateCards()
+        
+        animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
         
         Task { @MainActor in
             self.rewardedAdViewModel = RewardedAdViewModel(adUnitID: rewardAdUnitID)
@@ -337,35 +341,34 @@ class BingoViewModel: ObservableObject {
         
         // Find the current index of the betMultiplier in the betMultipliers array
         if let currentIndex = betMultipliers.firstIndex(of: betMultiplier) {
-            // Calculate the next index, wrapping around to 0 if at the end
             let nextIndex = (currentIndex + 1) % betMultipliers.count
-            betMultiplier = betMultipliers[nextIndex] // Update the betMultiplier to the next value
+            betMultiplier = betMultipliers[nextIndex]
         } else {
-            // If the current betMultiplier isn't found, default to the first multiplier
             betMultiplier = betMultipliers.first ?? 1
         }
+
+        payoutTable = generatePayoutTable()
         
-        payoutTable = generatePayoutTable() // Re-generate the payout table based on the new bet
+        // Update animated jackpot count based on new bet multiplier
+        animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
     }
-    
+
     func lowerBetToMaxPossible() {
-        // Sort betMultipliers in descending order
         let sortedMultipliers = betMultipliers.sorted(by: >)
         
-        // Find the first multiplier where baseBet * betMultiplier <= credits
         if let maxMultiplier = sortedMultipliers.first(where: { baseBet * $0 <= credits }) {
             betMultiplier = maxMultiplier
         } else {
-            // If no multiplier fits, set to minimum (e.g., 1)
             betMultiplier = betMultipliers.first ?? 1
         }
         
-        // Update the payout table based on the new betMultiplier
         payoutTable = generatePayoutTable()
         
-        // Optional: Provide feedback to the user
-        soundManager.playSound(.beepDown) // Play a sound indicating bet has been lowered
-        HapticManager.shared.triggerHaptic(for: .soft) // Trigger a soft haptic feedback
+        soundManager.playSound(.beepDown)
+        HapticManager.shared.triggerHaptic(for: .soft)
+        
+        // Update animated jackpot count after lowering bet
+        animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
     }
 
     
@@ -503,6 +506,49 @@ class BingoViewModel: ObservableObject {
         finalizeGame()
     }
     
+    /// Adds to the jackpot and animates the count increase
+    func addToJackpotWithAnimation() {
+        let currentCount = jackpotStorage[betMultiplier, default: 0]
+        let newCount = currentCount + betMultiplier
+        jackpotStorage[betMultiplier] = newCount
+
+        lastJackpotCount = currentCount // Start from the previous count
+        animatedJackpotCount = currentCount
+        showJackpotAnimation = true // Make the animation view visible
+
+        // Determine animation speed based on amount change
+        let duration = getAnimationDuration(for: betMultiplier)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.incrementJackpotCount(to: newCount, duration: duration)
+        }
+    }
+
+    /// Animates the jackpot count increment one-by-one
+    private func incrementJackpotCount(to finalValue: Int, duration: Double) {
+        let totalIncrements = finalValue - animatedJackpotCount
+        guard totalIncrements > 0 else { return }
+
+        let incrementInterval = duration / Double(totalIncrements)
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            for i in 1...totalIncrements {
+                DispatchQueue.main.asyncAfter(deadline: .now() + (incrementInterval * Double(i))) {
+                    self.animatedJackpotCount += 1
+                }
+            }
+        }
+    }
+
+    /// Determines animation duration based on amount change
+    private func getAnimationDuration(for amount: Int) -> Double {
+        switch amount {
+        case 0..<21: return 0.75
+        case 21...: return 1.5
+        default: return 3.0
+        }
+    }
+    
     private func addToJackpot() {
         let currentCount = jackpotStorage[betMultiplier, default: 0]
         let newCount = currentCount + betMultiplier
@@ -567,7 +613,8 @@ class BingoViewModel: ObservableObject {
         }
         
         if space.id == "47" {
-                addToJackpot()
+            addToJackpotWithAnimation()
+//                addToJackpot()
         }
 
         if numberIsOnCard, let index = bingoCards.firstIndex(where: { $0.id == cardID }) {

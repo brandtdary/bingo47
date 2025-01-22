@@ -59,19 +59,21 @@ struct BingoView: View {
                     
                     ZStack {
                         VStack(spacing: 0) {
-                            Image("47bill")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxWidth: cardSize / 4)
-                            
-                            Text("x \(viewModel.jackpotStorage[viewModel.betMultiplier, default: 0])")
-                                .font(.system(size: cardSize / 10)).bold()
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.25)
-                                .foregroundColor(.white)
-                        }
-                        .offset(x: viewModel.shouldShowJackpotDisplay() ? -((cardSize / 2) + 45) : 0)
-                        .animation(.spring, value: viewModel.shouldShowJackpotDisplay())
+                                Image("47bill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(maxWidth: cardSize / 4)
+
+                                // Single Jackpot Counter
+                                Text("x \(viewModel.animatedJackpotCount)")
+                                    .font(.system(size: cardSize / 10)).bold()
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.25)
+                                    .foregroundColor(.white)
+                            }
+                            .offset(x: viewModel.shouldShowJackpotDisplay() ? -((cardSize / 2) + 45) : 0)
+                            .animation(.spring, value: viewModel.shouldShowJackpotDisplay())
+                        
                         
                         VStack(spacing: 16) {
                             // MARK: SETTINGS MENU
