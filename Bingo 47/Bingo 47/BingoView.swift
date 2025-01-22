@@ -258,7 +258,8 @@ struct BingoView: View {
                                     useBallIndicator.toggle()
                                 }
                             }
-                        }                    }
+                        }
+                    }
                     
                     HStack(alignment: .top) {
                         let payoutTableWidth = min(300, totalWidth * 0.4) // Expands on iPads, but maxes at 300px
@@ -266,58 +267,78 @@ struct BingoView: View {
                         
                         // MARK:  Payout Table - Dynamically sized
                         VStack(spacing: 0) {
-                            ZStack {
-                                Text("Bingos Win")
+                            VStack(spacing: 0) {
+                                ZStack {
+                                    Text("Bingos Win")
+                                        .font(.system(size: payoutTableHeight * 0.08, weight: .bold))
+                                        .opacity(0) // Hidden reference text
+                                    
+                                    HStack {
+                                        Text("Bingos")
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.1)
+                                        Spacer()
+                                        Text("Win")
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.1)
+                                    }
                                     .font(.system(size: payoutTableHeight * 0.09, weight: .bold))
-                                    .opacity(0) // Hidden reference text
-                                
-                                HStack {
-                                    Text("Bingos")
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.1)
-                                    Spacer()
-                                    Text("Win")
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.1)
                                 }
-                                .font(.system(size: payoutTableHeight * 0.09, weight: .bold))
-                            }
-                            .frame(maxWidth: .infinity)
-                            .foregroundColor(.white)
-                            .padding(.horizontal)
-                            .padding(.top, 8)
-
-                            ForEach(viewModel.payoutTable, id: \.bingos) { payout in
-                                let isHighlighted = payout.win == viewModel.currentGameWinnings
-                                HStack {
-                                    Text("\(payout.bingos)")
-                                        .font(.system(size: payoutTableHeight * 0.06, weight: .bold))
-                                        .minimumScaleFactor(0.5)
-                                    Spacer()
-                                    Text("\(payout.win)")
-                                        .font(.system(size: payoutTableHeight * 0.06, weight: .bold))
-                                        .minimumScaleFactor(0.5)
-                                }
-                                .frame(maxWidth: .infinity, minHeight: payoutTableHeight * 0.06)
+                                .frame(maxWidth: .infinity)
+                                .foregroundColor(.white)
                                 .padding(.horizontal)
-                                .background(isHighlighted ? Color.yellow : Color.clear)
-                                .foregroundColor(isHighlighted ? .red : .white)
+                                .padding(.top, 4)
+                                
+                                ForEach(viewModel.payoutTable, id: \.bingos) { payout in
+                                    let isHighlighted = payout.win == viewModel.currentGameWinnings
+                                    HStack {
+                                        Text("\(payout.bingos)")
+                                            .font(.system(size: payoutTableHeight * 0.06, weight: .bold))
+                                            .minimumScaleFactor(0.5)
+                                        Spacer()
+                                        Text("\(payout.win)")
+                                            .font(.system(size: payoutTableHeight * 0.06, weight: .bold))
+                                            .minimumScaleFactor(0.5)
+                                    }
+                                    .frame(maxWidth: .infinity, minHeight: payoutTableHeight * 0.06)
+                                    .padding(.horizontal)
+                                    .background(isHighlighted ? Color.yellow : Color.clear)
+                                    .foregroundColor(isHighlighted ? .red : .white)
+                                }
+                                
+                                Spacer()
                             }
-                            Spacer()
+                            .frame(width: payoutTableWidth)
+                            .frame(maxHeight: .infinity)
+                            .background(Color.blue.opacity(0.75))
+                            .cornerRadius(15) // Ensures the container has rounded corners
+                            .overlay( // Adds a border with rounded corners
+                                RoundedRectangle(cornerRadius: 15) // Same corner radius as background
+                                    .inset(by: 2) // Moves the border fully inside by 2 points
+                                    .stroke(Color.yellow, lineWidth: 2) // 2-pixel-thick yellow border
+                            )
+                                                        
+                            Button(action: {
+                                showGameCenter = true
+                            }) {
+                                Text("LEADERBOARDS")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.1)
+                                    .padding(4)
+                                    .background(.purple.dimmedIf(viewModel.isGameActive))
+                                    .cornerRadius(15)
+                                    .frame(maxHeight: 40)
+                                    .frame(maxWidth: .infinity)
+                                    .opacity(isAuthenticated ? 1 : 0)
+                                
+                            }
+                            .disabled(!isAuthenticated || viewModel.isGameActive)
                         }
-                        .frame(width: payoutTableWidth)
-                        .frame(maxHeight: .infinity)
-                        .background(Color.blue.opacity(0.75))
-                        .cornerRadius(15) // Ensures the container has rounded corners
-                        .overlay( // Adds a border with rounded corners
-                            RoundedRectangle(cornerRadius: 15) // Same corner radius as background
-                                .inset(by: 2) // Moves the border fully inside by 2 points
-                                .stroke(Color.yellow, lineWidth: 2) // 2-pixel-thick yellow border
-                        )
                         
                         VStack(alignment: .trailing, spacing: 0) {
-                            HStack {
-//                                if viewModel.bonusBallsOffer != nil {
+                            HStack(spacing: 0) {
                                     Button(action: {
                                         viewModel.tryShowingRewardedAd()
                                     }) {
@@ -340,8 +361,9 @@ struct BingoView: View {
                                         .animation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0), value: viewModel.bonusBallsOffer)
                                     }
                                     .disabled(viewModel.isGameActive)
-//                                }
                                 
+                                Spacer()
+                                                                
                                 // New Buy Credits Button
                                 Button(action: {
                                     showStore()
@@ -357,24 +379,8 @@ struct BingoView: View {
                                         .frame(maxHeight: 44)
                                 }
                                 .disabled(viewModel.isGameActive)
-                                
-                                if isAuthenticated {
-                                    Button(action: {
-                                        showGameCenter = true
-                                    }) {
-                                        Text("WINNERS")
-                                            .font(.subheadline).bold()
-                                            .foregroundColor(.white)
-                                            .lineLimit(1)
-                                            .minimumScaleFactor(0.1)
-                                            .padding(8)
-                                            .background(.purple.dimmedIf(viewModel.isGameActive))
-                                            .cornerRadius(15)
-                                            .frame(maxHeight: 44)
-                                    }
-                                    .disabled(viewModel.isGameActive)
-                                }
                             }
+                            .frame(maxWidth: .infinity)
                             
                             Spacer()
                             
@@ -392,7 +398,6 @@ struct BingoView: View {
                                         .minimumScaleFactor(0.15)
                                         .foregroundStyle(Color.white)
                                 }
-                                .padding(.leading, 12) // Ensures spacing on smaller screens
                             }
 
                             Spacer()
@@ -444,6 +449,7 @@ struct BingoView: View {
                             .frame(maxWidth: 400) // Prevents excessive width on larger screens
                         }
                     }
+                    .padding(.top, 4)
                     .padding(.horizontal, 8)
                     .padding(.bottom, safeAreaBottom)
                 }

@@ -357,8 +357,6 @@ class BingoViewModel: ObservableObject {
         
         // Update animated jackpot count based on new bet multiplier
         animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
-        
-        checkBonusBallOffer()
     }
 
     @MainActor func lowerBetToMaxPossible() {
@@ -377,8 +375,6 @@ class BingoViewModel: ObservableObject {
         
         // Update animated jackpot count after lowering bet
         animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
-        
-        checkBonusBallOffer()
     }
 
     
