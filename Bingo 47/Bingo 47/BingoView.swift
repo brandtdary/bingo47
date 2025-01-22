@@ -127,16 +127,25 @@ struct BingoView: View {
                                             HapticManager.shared.triggerHaptic(for: .choose)
                                         } label: {
                                             HStack(spacing: 8) {
-                                                Label(speed.label, systemImage: speed.symbolName)
+//                                                if viewModel.gameSpeed == speed {
+//                                                    Image(systemName: "checkmark")
+//                                                        .foregroundStyle(speed.symbolColor, .gray)
+//                                                }
+                                                
+                                                let text = viewModel.gameSpeed == speed ? "🟩 " : "◻️ "
+
+                                                let color = viewModel.gameSpeed == speed ? Color.red : .gray
+                                                Label(text + speed.label, systemImage: speed.symbolName)
                                                     .symbolRenderingMode(.palette)
-                                                    .foregroundStyle(speed.symbolColor, .gray)
+                                                    .foregroundStyle(speed.symbolColor, color)
                                                 
-                                                Spacer()
-                                                
-                                                // Checkmark if this speed is selected
-                                                if viewModel.gameSpeed == speed {
-                                                    Image(systemName: "checkmark")
-                                                }
+//                                                Spacer()
+//                                                
+//                                                // Checkmark if this speed is selected
+//                                                if viewModel.gameSpeed == speed {
+//                                                    Image(systemName: "checkmark")
+//                                                        .foregroundStyle(speed.symbolColor, .gray)
+//                                                }
                                             }
                                         }
                                     }
