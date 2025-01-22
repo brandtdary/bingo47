@@ -712,9 +712,11 @@ class BingoViewModel: ObservableObject {
         numberOfGamesPlayed += 1
         credits += currentGameWinnings
         
-        if canShowRewardedAd {
-            showRewardedAdButton = true
+        // 33% chance to award 1–3 bonus balls for the NEXT game
+        if bonusBallsOffer == nil && Bool.random(), Int.random(in: 1...3) == 1 {
+            bonusBalls = Int.random(in: 1...3)
         }
+        
         
         submitScoreToLeaderboard(score: credits)
     }

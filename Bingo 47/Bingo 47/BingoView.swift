@@ -433,10 +433,11 @@ struct BingoView: View {
                                                     .foregroundStyle(Color.white)
                                             }
                                         }
+                                        .animation(.spring(response: 0.6, dampingFraction: 0.6, blendDuration: 0), value: viewModel.bonusBalls)
                                         
 
                                     }
-                                    .buttonStyle(BingoButtonStyle(backgroundColor: .red, textColor: .white, height: 55, isDisabled: viewModel.isGameActive))
+                                    .buttonStyle(BingoButtonStyle(backgroundColor: .red, textColor: .white, height: 75, isDisabled: viewModel.isGameActive))
                                     .disabled(viewModel.isGameActive)
                                 }
                             }
