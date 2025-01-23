@@ -554,16 +554,6 @@ class BingoViewModel: ObservableObject {
         default: return 3.0
         }
     }
-    
-    private func addToJackpot() {
-        let currentCount = jackpotStorage[betMultiplier, default: 0]
-        let newCount = currentCount + betMultiplier
-        jackpotStorage[betMultiplier] = newCount
-
-        #if DEBUG
-        print("💰 Added \(betMultiplier) to jackpot for bet \(betMultiplier). Total: \(newCount)")
-        #endif
-    }
 
     private func claimJackpot() {
         let jackpotCount = jackpotStorage[betMultiplier, default: 0]
@@ -571,7 +561,7 @@ class BingoViewModel: ObservableObject {
         
         if jackpotCount > 0 {
             credits += totalPrize
-            jackpotStorage[betMultiplier] = 0 // Reset jackpot
+            jackpotStorage[betMultiplier] = 10 // Reset jackpot
             lastJackpotAmount = totalPrize
             lastJackpotCount = jackpotCount
             showJackpotSheet = true

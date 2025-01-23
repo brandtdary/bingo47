@@ -112,10 +112,10 @@ struct BingoView: View {
                                             HapticManager.shared.triggerHaptic(for: .choose)
                                         } label: {
                                             HStack(spacing: 8) {
-                                                //                                                if viewModel.gameSpeed == speed {
-                                                //                                                    Image(systemName: "checkmark")
-                                                //                                                        .foregroundStyle(speed.symbolColor, .gray)
-                                                //                                                }
+//                                                if viewModel.gameSpeed == speed {
+//                                                    Image(systemName: "checkmark")
+//                                                        .foregroundStyle(speed.symbolColor, .gray)
+//                                                }
                                                 
                                                 let text = viewModel.gameSpeed == speed ? "🟩 " : "⬜️ "
                                                 
@@ -124,13 +124,13 @@ struct BingoView: View {
                                                     .symbolRenderingMode(.palette)
                                                     .foregroundStyle(speed.symbolColor, color)
                                                 
-                                                //                                                Spacer()
-                                                //
-                                                //                                                // Checkmark if this speed is selected
-                                                //                                                if viewModel.gameSpeed == speed {
-                                                //                                                    Image(systemName: "checkmark")
-                                                //                                                        .foregroundStyle(speed.symbolColor, .gray)
-                                                //                                                }
+//                                                Spacer()
+//
+//                                                // Checkmark if this speed is selected
+//                                                if viewModel.gameSpeed == speed {
+//                                                    Image(systemName: "checkmark")
+//                                                        .foregroundStyle(speed.symbolColor, .gray)
+//                                                }
                                             }
                                         }
                                     }
@@ -309,7 +309,6 @@ struct BingoView: View {
                                 Spacer()
                             }
                             .frame(width: payoutTableWidth)
-                            .frame(maxHeight: .infinity)
                             .background(Color.blue.opacity(0.75))
                             .cornerRadius(15) // Ensures the container has rounded corners
                             .overlay( // Adds a border with rounded corners
@@ -450,7 +449,6 @@ struct BingoView: View {
                         }
                     }
                     .padding(.top, 4)
-                    .padding(.horizontal, 8)
                     .padding(.bottom, safeAreaBottom)
                 }
                 
@@ -515,7 +513,9 @@ struct BingoView: View {
                 .padding(.horizontal, 16) // Adds padding on the sides
             }
             .onAppear {
-                SoundManager.shared.playSound(.first3)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    SoundManager.shared.playSound(.first3)
+                }
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity) // Ensure full expansion
