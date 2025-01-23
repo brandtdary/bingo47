@@ -337,33 +337,41 @@ struct BingoView: View {
                         }
                         
                         VStack(alignment: .trailing, spacing: 0) {
-                            HStack(spacing: 0) {
-                                    Button(action: {
-                                        viewModel.tryShowingRewardedAd()
-                                    }) {
-                                        HStack(spacing: 2) {
-                                            Image(systemName: "play.rectangle.fill")
-                                            Text("+\(viewModel.bonusBallsOffer ?? 0) ")
-                                                .bold()
-                                            Image(systemName: "circle.fill")
-                                                .foregroundStyle(Color.white.dimmedIf(viewModel.isGameActive))
-                                        }
-                                        .font(.subheadline)
-                                        .foregroundColor(.black)
-                                        .padding(8)
-                                        .background(Color.gold.dimmedIf(viewModel.isGameActive))
-                                        .cornerRadius(15)
-                                        .frame(maxHeight: 44)
-                                        .frame(maxWidth: .infinity)
-                                        .scaleEffect(viewModel.bonusBallsOffer != nil ? 1.0 : 0.25)
-                                        .opacity(viewModel.bonusBallsOffer != nil ? 1 : 0)
-                                        .animation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0), value: viewModel.bonusBallsOffer)
+                            HStack(spacing: 8) {
+                                // Video Bonus Button
+                                Button(action: {
+                                    viewModel.tryShowingRewardedAd()
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "play.rectangle.fill")
+                                            .font(.system(size: 18)) // Fixed size but still scales
+                                            .layoutPriority(1)
+                                        
+                                        Text("+\(viewModel.bonusBallsOffer ?? 0)")
+                                            .bold()
+                                            .font(.system(size: 16)) // Allows shrinkage but remains readable
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.5) // Ensures it scales but stays on one line
+                                            .layoutPriority(1)
+                                        
+                                        Image(systemName: "circle.fill")
+                                            .font(.system(size: 14)) // Slightly smaller than text to prevent clipping
+                                            .foregroundColor(.white)
+                                            .layoutPriority(1)
                                     }
-                                    .disabled(viewModel.isGameActive)
-                                
-                                Spacer()
-                                                                
-                                // New Buy Credits Button
+                                    .foregroundColor(.black)
+                                    .padding(8)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 44)
+                                    .background(Color.gold.dimmedIf(viewModel.isGameActive))
+                                    .cornerRadius(15)
+                                    .scaleEffect(viewModel.bonusBallsOffer != nil ? 1.0 : 0.25)
+                                    .opacity(viewModel.bonusBallsOffer != nil ? 1 : 0)
+                                    .animation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0), value: viewModel.bonusBallsOffer)
+                                }
+                                .disabled(viewModel.isGameActive)
+
+                                // SHOP Button
                                 Button(action: {
                                     showStore()
                                 }) {
@@ -373,9 +381,9 @@ struct BingoView: View {
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.1)
                                         .padding(8)
+                                        .frame(width: 80, height: 44) // Fixed width and height for consistency
                                         .background(Color.gold.dimmedIf(viewModel.isGameActive))
                                         .cornerRadius(15)
-                                        .frame(maxHeight: 44)
                                 }
                                 .disabled(viewModel.isGameActive)
                             }
@@ -428,12 +436,18 @@ struct BingoView: View {
                                                 .bold()
                                                 .lineLimit(1)
                                                 .minimumScaleFactor(0.1)
+                                                .layoutPriority(1)
                                             
                                             if viewModel.bonusBalls > 0 {
                                                 Text(" +\(viewModel.bonusBalls) ")
                                                     .font(.subheadline)
+                                                    .lineLimit(1)
+                                                    .minimumScaleFactor(0.1)
+                                                    .layoutPriority(1)
                                                 Image(systemName: "circle.fill")
-                                                    .font(.subheadline)
+                                                    .font(.system(size: 16))
+                                                    .lineLimit(1)
+                                                    .minimumScaleFactor(0.1)
                                                     .foregroundStyle(Color.white)
                                             }
                                         }
