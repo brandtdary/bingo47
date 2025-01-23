@@ -560,11 +560,14 @@ class BingoViewModel: ObservableObject {
         let totalPrize = jackpotCount * 47
         
         if jackpotCount > 0 {
+            let jackpotStartingPoint = 10
             credits += totalPrize
-            jackpotStorage[betMultiplier] = 10 // Reset jackpot
+            jackpotStorage[betMultiplier] = jackpotStartingPoint // Reset jackpot
             lastJackpotAmount = totalPrize
             lastJackpotCount = jackpotCount
             showJackpotSheet = true
+            
+            animatedJackpotCount = jackpotStorage[betMultiplier] ?? jackpotStartingPoint
         }
     }
 
@@ -696,8 +699,7 @@ class BingoViewModel: ObservableObject {
         numberOfGamesPlayed += 1
         credits += currentGameWinnings
         
-        // 33% chance to award 1–3 bonus balls for the NEXT game
-        if bonusBallsOffer == nil && Bool.random(), Int.random(in: 1...3) == 1 {
+        if bonusBallsOffer == nil && Bool.random() {
             bonusBalls = Int.random(in: 1...3)
         }
         
@@ -864,15 +866,8 @@ class BingoViewModel: ObservableObject {
         return space.id == BingoViewModel.bonusSpaceID
     }
     
-    
-    var canShowRewardedAd: Bool {
-        #if DEBUG
-        return true
-        #endif
-        return numberOfGamesPlayed > 0 && numberOfGamesPlayed % 3 == 0
-    }
-    
     @MainActor func checkBonusBallOffer() {
+        let adIsReady = rewardedAdViewModel?.isAdReady == true
         if bonusBallOfferGamesRemaining > 0 {
             bonusBallOfferGamesRemaining -= 1
             if bonusBallOfferGamesRemaining == 0 {
@@ -881,7 +876,7 @@ class BingoViewModel: ObservableObject {
             }
         } else if bonusBallOfferCooldown > 0 {
             bonusBallOfferCooldown -= 1
-        } else if rewardedAdViewModel?.isAdReady == true {
+        } else if adIsReady {
             bonusBallsOffer = Int.random(in: 5...10)
             bonusBallOfferGamesRemaining = 3
         }
