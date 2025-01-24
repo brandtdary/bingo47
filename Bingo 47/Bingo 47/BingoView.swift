@@ -357,7 +357,7 @@ struct BingoView: View {
                                         
                                         Image(systemName: "circle.fill")
                                             .font(.system(size: 14)) // Slightly smaller than text to prevent clipping
-                                            .foregroundColor(.white)
+                                            .foregroundColor(.white.dimmedIf(viewModel.isGameActive))
                                             .layoutPriority(1)
                                     }
                                     .foregroundColor(.black)
