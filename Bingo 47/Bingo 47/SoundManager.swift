@@ -91,14 +91,11 @@ final class SoundManager {
     }
     
     @objc private func appDidBecomeActive() {
-        try? AVAudioSession.sharedInstance().setActive(true)
-        refreshSoundPlayers()
-    }
-    
-    private func refreshSoundPlayers() {
-//        if soundPools.isEmpty {
-//            preloadAllSounds()
-//        }
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Audio Session NOT ACTIVE")
+        }
     }
         
     // MARK: - Preload Short Sounds

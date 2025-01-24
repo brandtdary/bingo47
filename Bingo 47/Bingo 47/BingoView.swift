@@ -322,15 +322,16 @@ struct BingoView: View {
                             }) {
                                 Text("LEADERBOARDS")
                                     .font(.subheadline)
-                                    .foregroundColor(.white)
+                                    .padding(12)
+                                    .foregroundColor(.white.dimmedIf(viewModel.isGameActive))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.1)
-                                    .padding(4)
                                     .background(.purple.dimmedIf(viewModel.isGameActive))
                                     .cornerRadius(15)
                                     .frame(maxHeight: 40)
                                     .frame(maxWidth: .infinity)
                                     .opacity(isAuthenticated ? 1 : 0)
+                                    .padding(.top, 4)
                                 
                             }
                             .disabled(!isAuthenticated || viewModel.isGameActive)
