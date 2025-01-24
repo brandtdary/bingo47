@@ -35,6 +35,8 @@ class BingoViewModel: ObservableObject {
     @Published var showJackpotAnimation: Bool = false
     @Published var animatedJackpotCount: Int = 0
     
+    @Published var errorMessages: [String] = []
+    
     
     // MARK: REWARDED BONUS BALLS
     @Published var bonusBallsOffer: Int? = nil // Current offer (5-10 balls)
@@ -139,6 +141,8 @@ class BingoViewModel: ObservableObject {
     private(set) var bonusBalls: Int = 0
 
     init() {
+        observeSoundErrors()
+
         resetGame()
         loadOrGenerateCards()
         
@@ -532,7 +536,8 @@ class BingoViewModel: ObservableObject {
 
     /// Animates the jackpot count increment one-by-one
     private func incrementJackpotCount(to finalValue: Int, duration: Double) {
-        let totalIncrements = finalValue - animatedJackpotCount
+        let totalIncrements = min(100, finalValue - animatedJackpotCount)
+        let aproximateStep = Int((finalValue - animatedJackpotCount) / totalIncrements)
         guard totalIncrements > 0 else { return }
 
         let incrementInterval = duration / Double(totalIncrements)
@@ -540,8 +545,11 @@ class BingoViewModel: ObservableObject {
         DispatchQueue.global(qos: .userInitiated).async {
             for i in 1...totalIncrements {
                 DispatchQueue.main.asyncAfter(deadline: .now() + (incrementInterval * Double(i))) {
-                    self.animatedJackpotCount += 1
+                    self.animatedJackpotCount += aproximateStep
                 }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now()) {
+                self.animatedJackpotCount = finalValue
             }
         }
     }
@@ -560,7 +568,7 @@ class BingoViewModel: ObservableObject {
         let totalPrize = jackpotCount * 47
         
         if jackpotCount > 0 {
-            let jackpotStartingPoint = 10
+            let jackpotStartingPoint = betMultiplier * 20
             credits += totalPrize
             jackpotStorage[betMultiplier] = jackpotStartingPoint // Reset jackpot
             lastJackpotAmount = totalPrize
@@ -700,7 +708,7 @@ class BingoViewModel: ObservableObject {
         credits += currentGameWinnings
         
         if bonusBallsOffer == nil && Bool.random() {
-            bonusBalls = Int.random(in: 1...3)
+            bonusBalls = Int.random(in: 1...5)
         }
         
         
@@ -881,6 +889,36 @@ class BingoViewModel: ObservableObject {
             bonusBallOfferGamesRemaining = 3
         }
     }
+    
+    
+    // MARK: Error Handling (Sounds)
+    private func observeSoundErrors() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleSoundError(_:)),
+            name: .soundError,
+            object: nil
+        )
+    }
+
+    @objc private func handleSoundError(_ notification: Notification) {
+        if let errorMessage = notification.userInfo?["message"] as? String {
+            DispatchQueue.main.async {
+                self.errorMessages.append(errorMessage)
+            }
+        }
+    }
+
+    func dismissError(at index: Int) {
+        DispatchQueue.main.async {
+            self.errorMessages.remove(at: index)
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .soundError, object: nil)
+    }
+
 }
 
 extension BingoViewModel {
@@ -1040,5 +1078,31 @@ extension UIApplication {
             return nil
         }
         return window.rootViewController
+    }
+}
+
+extension Int {
+    private static let sharedFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }()
+    
+    func formatted(shortened: Bool = false) -> String {
+        guard shortened else {
+            return "\(Int.sharedFormatter.string(for: Double(self)) ?? "0")"
+        }
+        
+        switch self {
+        case 1_000..<1_000_000:
+            return "\(Int.sharedFormatter.string(for: Double(self) / 1_000) ?? "0") K"
+        case 1_000_000..<1_000_000_000:
+            return "\(Int.sharedFormatter.string(for: Double(self) / 1_000_000) ?? "0") M"
+        case 1_000_000_000..<1_000_000_000_000:
+            return "\(Int.sharedFormatter.string(for: Double(self) / 1_000_000_000) ?? "0") B"
+        default:
+            return "\(self)"
+        }
     }
 }

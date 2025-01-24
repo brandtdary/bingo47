@@ -68,35 +68,55 @@ final class SoundManager {
     private func setupAudioSession() {
         let session = AVAudioSession.sharedInstance()
         do {
-#if DEBUG
-            print("Current Audio Session Category: \(session.category.rawValue)")
-            print("Current Audio Session Mode: \(session.mode.rawValue)")
-            print("Current Audio Session Options: \(session.categoryOptions)")
-#endif
-            
-            try session.setCategory(.ambient)
-            try session.setActive(true)
-#if DEBUG
-            print("Audio session set to .ambient and activated successfully.")
-#endif
+            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers]) // 🔹 Changed from .ambient to .playback
+            try session.setActive(true, options: .notifyOthersOnDeactivation) // 🔹 Ensures it stays active
+            print("✅ Audio session set to .playback and activated successfully.")
         } catch {
-#if DEBUG
-            print("Failed to set up audio session: \(error.localizedDescription)")
-#endif
+            NotificationCenter.default.post(
+                name: .soundError,
+                object: nil,
+                userInfo: ["message": "Failed to set up audio session: \(error.localizedDescription)", "function": #function]
+            )
+            print("❌ Failed to set up audio session: \(error.localizedDescription)")
+        }
+    }
+    
+    private func restartAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "✅ Audio session restarted successfully.","function": #function])
+            print("✅ Audio session restarted successfully.")
+        } catch {
+            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "❌ Failed to restart audio session: \(error.localizedDescription)","function": #function])
+
+            print("❌ Failed to restart audio session: \(error.localizedDescription)")
         }
     }
     
     private func registerForAppLifecycleNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleAudioInterruption), name: AVAudioSession.interruptionNotification, object: nil)
     }
     
     @objc private func appDidBecomeActive() {
-        do {
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            print("Audio Session NOT ACTIVE")
+        restartAudioSession()
+    }
+    
+    @objc private func handleAudioInterruption(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let typeRaw = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeRaw) else { return }
+
+        switch type {
+        case .began:
+            print("🔹 Audio session interrupted.")
+        case .ended:
+            restartAudioSession()
+        default:
+            break
         }
     }
+
         
     // MARK: - Preload Short Sounds
     private func preloadAllSounds() {
@@ -143,6 +163,8 @@ final class SoundManager {
             soundPools[sound] = pool
         } catch {
 #if DEBUG
+            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "Error preloading sound \(sound.fileName): \(error.localizedDescription)","function": #function])
+
             print("Error preloading sound \(sound.fileName): \(error.localizedDescription)")
 #endif
         }
@@ -151,6 +173,8 @@ final class SoundManager {
     func setVolume(for sound: Sound, volume: Float) {
         guard let pool = soundPools[sound] else {
 #if DEBUG
+            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "No pool found for sound: \(sound)",
+                                                                                       "function": #function])
             print("No pool found for sound: \(sound)")
 #endif
             return
@@ -173,6 +197,9 @@ final class SoundManager {
         guard let pool = soundPools[sound] else {
     #if DEBUG
             print("No pool found for sound: \(sound)")
+            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "No pool found for sound: \(sound)",
+                                                                                       "function": #function])
+
     #endif
             return
         }
@@ -188,6 +215,8 @@ final class SoundManager {
                 guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
     #if DEBUG
                     print("Sound file \(sound.fileName).\(sound.fileExtension) not found.")
+                    NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "Sound \(sound) not found in pool",
+                                                                                               "function": #function])
     #endif
                     return
                 }
@@ -198,11 +227,16 @@ final class SoundManager {
                     soundPools[sound]?.append(newPlayer)
                 } catch {
     #if DEBUG
+                    NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "Error creating new player for sound \(sound): \(error.localizedDescription)", "function": #function])
+
                     print("Error creating new player for sound \(sound): \(error.localizedDescription)")
     #endif
                 }
             } else {
     #if DEBUG
+                NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "Maximum pool size reached for sound: \(sound)",
+                                                                                           "function": #function])
+
                 print("Maximum pool size reached for sound: \(sound)")
     #endif
             }
@@ -221,4 +255,9 @@ final class SoundManager {
             return poolSize // This is your default pool size from the SoundManager
         }
     }
+}
+
+
+extension Notification.Name {
+    static let soundError = Notification.Name("soundError")
 }

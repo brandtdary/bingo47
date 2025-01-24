@@ -65,7 +65,7 @@ struct BingoView: View {
                                     .frame(maxWidth: cardSize / 4)
 
                                 // Single Jackpot Counter
-                                Text("x \(viewModel.animatedJackpotCount)")
+                                Text("x \(viewModel.animatedJackpotCount.formatted(shortened: true))")
                                     .font(.system(size: cardSize / 10)).bold()
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.25)
@@ -472,6 +472,41 @@ struct BingoView: View {
                 let allowClose = viewModel.credits > viewModel.baseBet
                 OutOfCreditsView(showCloseButton: allowClose, showLowerBetButton: showLowerBetButton, isVisible: $showOutOfCredits, viewModel: viewModel)
             }
+            
+            // Error Messages Overlay
+            ScrollView {
+                VStack(alignment: .center) {
+                    Button {
+                        viewModel.errorMessages.removeAll()
+                    } label: {
+                        Text("Clear All")
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .foregroundStyle(.white)
+                            .cornerRadius(10)
+                    }
+
+                    ForEach(viewModel.errorMessages.indices, id: \.self) { index in
+                        Text(viewModel.errorMessages[index])
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red.opacity(0.95))
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .transition(.opacity)
+                            .onTapGesture {
+                                viewModel.dismissError(at: index)
+                            }
+                    }
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+            }
+            .frame(maxHeight: viewModel.errorMessages.isEmpty ? 0 : .infinity) // Prevent it from taking too much space
+            .animation(.easeInOut, value: viewModel.errorMessages)
+            
+            
         }
         .onAppear {
             authenticateUser()
@@ -518,14 +553,20 @@ struct BingoView: View {
                     .foregroundColor(.white)
                 
                 Spacer()
-
-                Button("COLLECT") {
+                
+                Button {
                     viewModel.showJackpotSheet = false
+                } label: {
+                    Text("COLLECT")
+                        .font(.largeTitle).bold()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.1)
+                        .background(Color.green)
+                        .foregroundStyle(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .cornerRadius(15)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.green)
-                .frame(maxWidth: .infinity, minHeight: 50) // Ensures full width and height of 50
-                .padding(.horizontal, 16) // Adds padding on the sides
             }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
