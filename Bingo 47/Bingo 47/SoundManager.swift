@@ -11,8 +11,15 @@ import UIKit
 final class SoundManager {
     static let shared = SoundManager()
     
-    private var soundPools: [Sound: [AVAudioPlayer]] = [:] // Dictionary to hold pools for each sound
-    private let poolSize = 1 // Default number of players per sound pool
+    private var audioEngine = AVAudioEngine()
+    private var playerNodes: [Sound: AVAudioPlayerNode] = [:]
+
+    private var playerNodePools: [Sound: [AVAudioPlayerNode]] = [:]
+    private let maxPlayerNodesPerSound = 5 // Adjust as needed
+    private var audioBuffers: [Sound: AVAudioPCMBuffer] = [:]
+    
+//    private var soundPools: [Sound: [AVAudioPlayer]] = [:] // Dictionary to hold pools for each sound
+//    private let poolSize = 1 // Default number of players per sound pool
     
     // Existing Sound Enum for Sound Effects
     enum Sound: CaseIterable {
@@ -61,25 +68,23 @@ final class SoundManager {
     
     private init() {
         setupAudioSession()
-//        preloadAllSounds()
+        preloadAllSounds()
         registerForAppLifecycleNotifications()
     }
-    
+
     private func setupAudioSession() {
         let session = AVAudioSession.sharedInstance()
         do {
-            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers]) // 🔹 Changed from .ambient to .playback
-            try session.setActive(true, options: .notifyOthersOnDeactivation) // 🔹 Ensures it stays active
+            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
+            try session.setActive(true, options: .notifyOthersOnDeactivation)
+            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "✅ Audio session set to .playback and activated successfully.","function": #function])
             print("✅ Audio session set to .playback and activated successfully.")
         } catch {
-            NotificationCenter.default.post(
-                name: .soundError,
-                object: nil,
-                userInfo: ["message": "Failed to set up audio session: \(error.localizedDescription)", "function": #function]
-            )
+            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "❌ Failed to set up audio session: \(error.localizedDescription)","function": #function])
             print("❌ Failed to set up audio session: \(error.localizedDescription)")
         }
     }
+
     
     private func restartAudioSession() {
         do {
@@ -121,139 +126,68 @@ final class SoundManager {
     // MARK: - Preload Short Sounds
     private func preloadAllSounds() {
         for sound in Sound.allCases {
-            let customPoolSize: Int
-            switch sound {
-            case .markedCalled:
-                customPoolSize = 5
-            case .called:
-                customPoolSize = 10
-            case .beepUp, .beepDown:
-                customPoolSize = 3
-            default:
-                customPoolSize = poolSize
-            }
-            preloadSound(sound, poolSize: customPoolSize)
+            var nodePool: [AVAudioPlayerNode] = []
             
-            // Reduce volume for beepUp and beepDown
-            if sound == .beepUp || sound == .beepDown || sound == .markedNotCalled {
-                setVolume(for: sound, volume: 0.5) // Set to half volume, adjust as needed
-            } else if sound == .bingo {
-                setVolume(for: sound, volume: 0.25)
-            } else {
-                setVolume(for: sound, volume: 1.0)
+            for _ in 0..<maxPlayerNodesPerSound { // ✅ Create multiple nodes for each sound
+                let playerNode = AVAudioPlayerNode()
+                audioEngine.attach(playerNode)
+                nodePool.append(playerNode)
+            }
+            
+            guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
+                NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "❌ Sound file \(sound.fileName).\(sound.fileExtension) not found.","function": #function])
+
+                print("❌ Sound file \(sound.fileName).\(sound.fileExtension) not found.")
+                continue
+            }
+
+            do {
+                let audioFile = try AVAudioFile(forReading: url)
+                let format = audioFile.processingFormat
+                let frameCount = AVAudioFrameCount(audioFile.length)
+                let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount)!
+                try audioFile.read(into: buffer)
+
+                // Connect all player nodes to the mixer
+                for playerNode in nodePool {
+                    audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: format)
+                }
+
+                playerNodePools[sound] = nodePool
+                audioBuffers[sound] = buffer
+            } catch {
+                NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "❌ Error loading sound file \(sound.fileName): \(error.localizedDescription)","function": #function])
+
+                print("❌ Error loading sound file \(sound.fileName): \(error.localizedDescription)")
             }
         }
-    }
 
-    private func preloadSound(_ sound: Sound, poolSize: Int) {
-        guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
-#if DEBUG
-            print("Sound file \(sound.fileName).\(sound.fileExtension) not found.")
-#endif
-            return
-        }
-        
-        var pool: [AVAudioPlayer] = []
         do {
-            for _ in 0..<poolSize {
-                let player = try AVAudioPlayer(contentsOf: url)
-                player.prepareToPlay()
-                pool.append(player)
-            }
-            soundPools[sound] = pool
+            try audioEngine.start()
+            print("✅ Audio engine started successfully.")
         } catch {
-#if DEBUG
-            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "Error preloading sound \(sound.fileName): \(error.localizedDescription)","function": #function])
-
-            print("Error preloading sound \(sound.fileName): \(error.localizedDescription)")
-#endif
-        }
-    }
-    
-    func setVolume(for sound: Sound, volume: Float) {
-        guard let pool = soundPools[sound] else {
-#if DEBUG
-            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "No pool found for sound: \(sound)",
-                                                                                       "function": #function])
-            print("No pool found for sound: \(sound)")
-#endif
-            return
-        }
-        
-        // Adjust the volume of each player in the pool
-        for player in pool {
-            player.volume = volume
+            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "❌ Failed to start audio engine: \(error.localizedDescription)","function": #function])
+            print("❌ Failed to start audio engine: \(error.localizedDescription)")
         }
     }
     
     // MARK: - Play Short Sound
-    func playSound(_ sound:  Sound) {
-        // If there's no pool or it's empty, create it now
-        if soundPools[sound] == nil || soundPools[sound]!.isEmpty {
-            preloadSound(sound, poolSize: decidePoolSize(for: sound))
-        }
-        
-        // Now grab the pool (it should exist after preloadSound, but just in case)
-        guard let pool = soundPools[sound] else {
-    #if DEBUG
-            print("No pool found for sound: \(sound)")
-            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "No pool found for sound: \(sound)",
-                                                                                       "function": #function])
-
-    #endif
+    func playSound(_ sound: Sound) {
+        guard let buffer = audioBuffers[sound], let nodePool = playerNodePools[sound] else {
+            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "❌ Player node or buffer for sound \(sound) not found.","function": #function])
+            print("❌ Player node or buffer for sound \(sound) not found.")
             return
         }
+
+        // Get an available player node (rotate through them)
+        let playerNode = nodePool.randomElement()! // ✅ Randomly pick a node for simultaneous play
         
-        // Try to reuse an idle player
-        if let player = pool.first(where: { !$0.isPlaying }) {
-            player.currentTime = 0
-            player.play()
-        } else {
-            // Optional: Dynamically create a new player if we haven't hit max pool size
-            let maxPoolSize = 10 // Adjust as needed
-            if pool.count < maxPoolSize {
-                guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
-    #if DEBUG
-                    print("Sound file \(sound.fileName).\(sound.fileExtension) not found.")
-                    NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "Sound \(sound) not found in pool",
-                                                                                               "function": #function])
-    #endif
-                    return
-                }
-                do {
-                    let newPlayer = try AVAudioPlayer(contentsOf: url)
-                    newPlayer.prepareToPlay()
-                    newPlayer.play()
-                    soundPools[sound]?.append(newPlayer)
-                } catch {
-    #if DEBUG
-                    NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "Error creating new player for sound \(sound): \(error.localizedDescription)", "function": #function])
-
-                    print("Error creating new player for sound \(sound): \(error.localizedDescription)")
-    #endif
-                }
-            } else {
-    #if DEBUG
-                NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "Maximum pool size reached for sound: \(sound)",
-                                                                                           "function": #function])
-
-                print("Maximum pool size reached for sound: \(sound)")
-    #endif
-            }
+        if playerNode.isPlaying {
+            playerNode.stop() // Stop only if necessary (optional)
         }
-    }
-    
-    private func decidePoolSize(for sound: Sound) -> Int {
-        switch sound {
-        case .markedCalled:
-            return 5
-        case .called:
-            return 10
-        case .beepUp, .beepDown:
-            return 3
-        default:
-            return poolSize // This is your default pool size from the SoundManager
-        }
+
+        playerNode.scheduleBuffer(buffer, at: nil, options: .interrupts, completionHandler: nil)
+        playerNode.play()
     }
 }
 
