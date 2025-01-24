@@ -69,7 +69,7 @@ final class SoundManager {
     private init() {
         setupAudioSession()
         preloadAllSounds()
-        registerForAppLifecycleNotifications()
+        registerForNotifications()
     }
 
     private func setupAudioSession() {
@@ -85,6 +85,10 @@ final class SoundManager {
         }
     }
 
+    @objc private func restartAudioAfterAd() {
+        print("🔄 Restarting audio session after ad...")
+        restartAudioSession()
+    }
     
     private func restartAudioSession() {
         do {
@@ -98,9 +102,10 @@ final class SoundManager {
         }
     }
     
-    private func registerForAppLifecycleNotifications() {
+    private func registerForNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleAudioInterruption), name: AVAudioSession.interruptionNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(restartAudioAfterAd), name: .rewardedAdDidFinish, object: nil)
     }
     
     @objc private func appDidBecomeActive() {
@@ -194,4 +199,5 @@ final class SoundManager {
 
 extension Notification.Name {
     static let soundError = Notification.Name("soundError")
+    static let rewardedAdDidFinish = Notification.Name("rewardDidFinishNotification")
 }
