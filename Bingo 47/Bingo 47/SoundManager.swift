@@ -24,7 +24,7 @@ final class SoundManager {
             try session.setActive(true)
             print("✅ Audio session set up successfully.")
         } catch {
-            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "❌ Failed to set up audio session: \(error.localizedDescription)","function": #function])
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Failed to set up audio session: \(error.localizedDescription)","function": #function])
             print("❌ Failed to set up audio session: \(error.localizedDescription)")
         }
     }
@@ -37,10 +37,10 @@ final class SoundManager {
     private func restartAudioSession() {
         do {
             try AVAudioSession.sharedInstance().setActive(true)
-            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "✅ Audio session restarted successfully.","function": #function])
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "✅ Audio session restarted successfully.","function": #function])
             print("✅ Audio session restarted successfully.")
         } catch {
-            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "❌ Failed to restart audio session: \(error.localizedDescription)","function": #function])
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Failed to restart audio session: \(error.localizedDescription)","function": #function])
             print("❌ Failed to restart audio session: \(error.localizedDescription)")
         }
     }
@@ -50,7 +50,7 @@ final class SoundManager {
     func playSound(_ sound: Sound) {
         guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
             print("❌ Sound file \(sound.fileName).\(sound.fileExtension) not found.")
-            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "❌ Sound file \(sound.fileName).\(sound.fileExtension) not found.","function": #function])
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Sound file \(sound.fileName).\(sound.fileExtension) not found.","function": #function])
             return
         }
 
@@ -64,7 +64,7 @@ final class SoundManager {
                 self.activePlayers.removeAll { $0 == player } // ✅ Remove when done
             }
         } catch {
-            NotificationCenter.default.post(name: .soundError, object: nil, userInfo: ["message": "❌ Error playing sound \(sound.fileName): \(error.localizedDescription)","function": #function])
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Error playing sound \(sound.fileName): \(error.localizedDescription)","function": #function])
             print("❌ Error playing sound \(sound.fileName): \(error.localizedDescription)")
         }
     }
@@ -81,6 +81,6 @@ enum Sound: String, CaseIterable {
 
 
 extension Notification.Name {
-    static let soundError = Notification.Name("soundError")
+    static let errorNotification = Notification.Name("errorNotification")
     static let rewardedAdDidFinish = Notification.Name("rewardDidFinishNotification")
 }

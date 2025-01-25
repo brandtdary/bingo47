@@ -518,7 +518,7 @@ class BingoViewModel: ObservableObject {
     
     /// Adds to the jackpot and animates the count increase
     func addToJackpotWithAnimation() {
-        let currentCount = jackpotStorage[betMultiplier, default: 0]
+        let currentCount = jackpotStorage[betMultiplier, default: betMultiplier]
         let newCount = currentCount + betMultiplier
         jackpotStorage[betMultiplier] = newCount
 
@@ -548,7 +548,7 @@ class BingoViewModel: ObservableObject {
                     self.animatedJackpotCount += aproximateStep
                 }
             }
-            DispatchQueue.main.asyncAfter(deadline: .now()) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
                 self.animatedJackpotCount = finalValue
             }
         }
@@ -896,7 +896,7 @@ class BingoViewModel: ObservableObject {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleSoundError(_:)),
-            name: .soundError,
+            name: .errorNotification,
             object: nil
         )
     }
@@ -916,7 +916,7 @@ class BingoViewModel: ObservableObject {
     }
 
     deinit {
-        NotificationCenter.default.removeObserver(self, name: .soundError, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .errorNotification, object: nil)
     }
 
 }
@@ -1085,6 +1085,7 @@ extension Int {
     private static let sharedFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
         return formatter
     }()
