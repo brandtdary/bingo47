@@ -15,6 +15,7 @@ struct BingoView: View {
     @State private var showFavoritesSheet = false
     @State private var showGameCenter = false
     @State private var isAuthenticated = false
+    @State private var showSettingsMenu = false
 
     // MARK: Ads
     @State private var isAdLoaded: Bool = false
@@ -77,100 +78,158 @@ struct BingoView: View {
                         
                         VStack(spacing: 16) {
                             // MARK: SETTINGS MENU
-                            Menu {
-                                // AutoMark Toggle
-                                // Auto-Mark Toggle
-                                Button(action: {
-                                    viewModel.autoMark.toggle()
-                                    HapticManager.shared.triggerHaptic(for: .choose)
-                                }) {
-                                    let emoji = viewModel.autoMark ? "🟩" : "⬜️"
-                                    Label("\(emoji) Auto-Mark", systemImage: "checkmark.square")
-                                }
-                                
-                                // Vibration Toggle
-                                Button(action: {
-                                    viewModel.vibrationEnabled.toggle()
-                                }) {
-                                    let emoji = viewModel.vibrationEnabled ? "🟩" : "⬜️"
-                                    Label("\(emoji) Vibration", systemImage: "iphone.radiowaves.left.and.right")
-                                }
-                                
-                                // Speak Numbers Toggle
-                                Button(action: {
-                                    viewModel.speakSpaces.toggle()
-                                    HapticManager.shared.triggerHaptic(for: .choose)
-                                }) {
-                                    let emoji = viewModel.speakSpaces ? "🟩" : "⬜️"
-                                    Label("\(emoji) Speak Numbers", systemImage: "speaker.wave.3.fill")
-                                }
-
-                                Menu("Game Speed") {
-                                    ForEach(GameSpeedOption.allCases, id: \.self) { speed in
-                                        Button {
-                                            viewModel.gameSpeed = speed
-                                            HapticManager.shared.triggerHaptic(for: .choose)
-                                        } label: {
-                                            HStack(spacing: 8) {
-//                                                if viewModel.gameSpeed == speed {
-//                                                    Image(systemName: "checkmark")
-//                                                        .foregroundStyle(speed.symbolColor, .gray)
-//                                                }
-                                                
-                                                let text = viewModel.gameSpeed == speed ? "🟩 " : "⬜️ "
-                                                
-                                                let color = viewModel.gameSpeed == speed ? Color.red : .secondary
-                                                Label(text + speed.label, systemImage: speed.symbolName)
-                                                    .symbolRenderingMode(.palette)
-                                                    .foregroundStyle(speed.symbolColor, color)
-                                                
-//                                                Spacer()
+//                            Menu {
+//                                // AutoMark Toggle
+//                                // Auto-Mark Toggle
+//                                Button(action: {
+//                                    viewModel.autoMark.toggle()
+//                                    HapticManager.shared.triggerHaptic(for: .choose)
+//                                }) {
+//                                    let emoji = viewModel.autoMark ? "🟩" : "⬜️"
+//                                    Label("\(emoji) Auto-Mark", systemImage: "checkmark.square")
+//                                }
+//                                
+//                                // Vibration Toggle
+//                                Button(action: {
+//                                    viewModel.vibrationEnabled.toggle()
+//                                }) {
+//                                    let emoji = viewModel.vibrationEnabled ? "🟩" : "⬜️"
+//                                    Label("\(emoji) Vibration", systemImage: "iphone.radiowaves.left.and.right")
+//                                }
+//                                
+//                                // Speak Numbers Toggle
+//                                Button(action: {
+//                                    viewModel.speakSpaces.toggle()
+//                                    HapticManager.shared.triggerHaptic(for: .choose)
+//                                }) {
+//                                    let emoji = viewModel.speakSpaces ? "🟩" : "⬜️"
+//                                    Label("\(emoji) Speak Numbers", systemImage: "speaker.wave.3.fill")
+//                                }
 //
-//                                                // Checkmark if this speed is selected
-//                                                if viewModel.gameSpeed == speed {
-//                                                    Image(systemName: "checkmark")
-//                                                        .foregroundStyle(speed.symbolColor, .gray)
-//                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                
-                                
-                                // Not this time... we like the colors WE chose.
-                                //                                Menu("Bingo Space Color") {
-                                //                                        ForEach(BingoColor.allCases) { colorOption in
-                                //                                            Button {
-                                //                                                viewModel.bingoSpaceColorChoice = colorOption.rawValue
-                                //                                            } label: {
-                                //                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
-                                //                                                    .symbolRenderingMode(.palette)
-                                //                                                    .foregroundStyle(colorOption.color, .white)
-                                //                                            }
-                                //                                        }
-                                //                                    }
-                                //
-                                //                                    // Another sub-menu for “Dauber Color”:
-                                //                                    Menu("Dauber Color") {
-                                //                                        ForEach(BingoColor.allCases) { colorOption in
-                                //                                            Button {
-                                //                                                viewModel.dauberColorChoice = colorOption.rawValue
-                                //                                            } label: {
-                                //                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
-                                //                                                    .symbolRenderingMode(.palette)
-                                //                                                    .foregroundStyle(colorOption.color, .white)
-                                //                                            }
-                                //                                        }
-                                //                                    }
-                                
+//                                Menu("Game Speed") {
+//                                    ForEach(GameSpeedOption.allCases, id: \.self) { speed in
+//                                        Button {
+//                                            viewModel.gameSpeed = speed
+//                                            HapticManager.shared.triggerHaptic(for: .choose)
+//                                        } label: {
+//                                            HStack(spacing: 8) {
+////                                                if viewModel.gameSpeed == speed {
+////                                                    Image(systemName: "checkmark")
+////                                                        .foregroundStyle(speed.symbolColor, .gray)
+////                                                }
+//                                                
+//                                                let text = viewModel.gameSpeed == speed ? "🟩 " : "⬜️ "
+//                                                
+//                                                let color = viewModel.gameSpeed == speed ? Color.red : .secondary
+//                                                Label(text + speed.label, systemImage: speed.symbolName)
+//                                                    .symbolRenderingMode(.palette)
+//                                                    .foregroundStyle(speed.symbolColor, color)
+//                                                
+////                                                Spacer()
+////
+////                                                // Checkmark if this speed is selected
+////                                                if viewModel.gameSpeed == speed {
+////                                                    Image(systemName: "checkmark")
+////                                                        .foregroundStyle(speed.symbolColor, .gray)
+////                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                                
+//                                
+//                                
+//                                // Not this time... we like the colors WE chose.
+//                                //                                Menu("Bingo Space Color") {
+//                                //                                        ForEach(BingoColor.allCases) { colorOption in
+//                                //                                            Button {
+//                                //                                                viewModel.bingoSpaceColorChoice = colorOption.rawValue
+//                                //                                            } label: {
+//                                //                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
+//                                //                                                    .symbolRenderingMode(.palette)
+//                                //                                                    .foregroundStyle(colorOption.color, .white)
+//                                //                                            }
+//                                //                                        }
+//                                //                                    }
+//                                //
+//                                //                                    // Another sub-menu for “Dauber Color”:
+//                                //                                    Menu("Dauber Color") {
+//                                //                                        ForEach(BingoColor.allCases) { colorOption in
+//                                //                                            Button {
+//                                //                                                viewModel.dauberColorChoice = colorOption.rawValue
+//                                //                                            } label: {
+//                                //                                                Label(colorOption.rawValue.capitalized, systemImage: colorOption == .random ? "shuffle.circle.fill" : "circle.fill")
+//                                //                                                    .symbolRenderingMode(.palette)
+//                                //                                                    .foregroundStyle(colorOption.color, .white)
+//                                //                                            }
+//                                //                                        }
+//                                //                                    }
+//                                
+//                            } label: {
+//                                Image(systemName: "slider.horizontal.3") // SF Symbol for settings
+//                                    .font(.largeTitle)
+//                                    .foregroundColor(.yellow.dimmedIf(viewModel.isGameActive))
+//                            }
+//                            .disabled(viewModel.isGameActive)
+
+
+                            Button {
+                                showSettingsMenu.toggle()
                             } label: {
-                                Image(systemName: "slider.horizontal.3") // SF Symbol for settings
+                                Image(systemName: "slider.horizontal.3")
                                     .font(.largeTitle)
                                     .foregroundColor(.yellow.dimmedIf(viewModel.isGameActive))
                             }
-                            .disabled(viewModel.isGameActive)
+                            .sheet(isPresented: $showSettingsMenu) {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("Game Settings")
+                                        .font(.title)
+                                        .bold()
+                                        .padding(.bottom, 8)
 
+                                    // Auto-Mark Toggle
+                                    Toggle(isOn: $viewModel.autoMark) {
+                                        Label("Auto-Mark", systemImage: "checkmark.square")
+                                    }
+                                    .toggleStyle(SwitchToggleStyle())
+
+                                    // Vibration Toggle
+                                    Toggle(isOn: $viewModel.vibrationEnabled) {
+                                        Label("Vibration", systemImage: "iphone.radiowaves.left.and.right")
+                                    }
+                                    .toggleStyle(SwitchToggleStyle())
+
+                                    // Speak Numbers Toggle
+                                    Toggle(isOn: $viewModel.speakSpaces) {
+                                        Label("Speak Numbers", systemImage: "speaker.wave.3.fill")
+                                    }
+                                    .toggleStyle(SwitchToggleStyle())
+
+                                    // Game Speed Selection
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("Game Speed")
+                                            .font(.headline)
+                                            .bold()
+
+                                        Picker("Game Speed", selection: $viewModel.gameSpeed) {
+                                            ForEach(GameSpeedOption.allCases, id: \.self) { speed in
+                                                Text(speed.label).tag(speed)
+                                            }
+                                        }
+                                        .pickerStyle(.segmented)
+                                        .padding(.vertical, 8)
+                                    }
+                                    // Close Button
+                                    Button("Close") {
+                                        showSettingsMenu = false
+                                    }
+                                    .padding(.top, 12)
+                                }
+                                .padding()
+                                .presentationDetents([.medium, .large]) // 🛑 THIS CONTROLS THE HEIGHT
+                                .presentationDragIndicator(.visible) // Shows a grabber at the top
+                            }
+                            
                             // MARK: Edit Cards
                             Button(action: {
                                 showFavoritesSheet.toggle()

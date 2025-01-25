@@ -45,9 +45,8 @@ class BingoViewModel: ObservableObject {
     
     @Published var showRewardedAdButton: Bool = false
     
-    var bonusSpaceCalled: Bool {
-        let bonusSpaceCalled = hasSpaceBeenCalled(BingoViewModel.bonusSpaceID)
-        return bonusSpaceCalled
+    var hasBonusSpaceBeenMarked: Bool {
+        return bingoCards.contains { $0.markedSpaces.contains { $0.id == BingoViewModel.bonusSpaceID } }
     }
     
     // MARK: Game Center
@@ -865,7 +864,7 @@ class BingoViewModel: ObservableObject {
     }
     
     func shouldShowJackpotDisplay() -> Bool  {
-        return !isGameActive || bonusSpaceCalled
+        return !isGameActive || hasBonusSpaceBeenMarked
     }
     
     func isBonusSpace(_ space: BingoSpace) -> Bool {
@@ -993,18 +992,16 @@ extension BingoViewModel {
 }
 
 enum GameSpeedOption: Double, CaseIterable {
-    case slow = 5.0
-    case normal = 2.5
-    case fast = 1.5
-    case superFast = 0.5
-    case lightening = 0.1
+    case slow = 3.5
+    case normal = 2.0
+    case fast = 0.5
+    case lightening = 0.15
 
     var label: String {
         switch self {
         case .slow:        return "Slow"
         case .normal:      return "Normal"
         case .fast:        return "Fast"
-        case .superFast:   return "Super Fast"
         case .lightening:  return "Lightening"
         }
     }
@@ -1014,7 +1011,6 @@ enum GameSpeedOption: Double, CaseIterable {
         case .slow:        return "tortoise"
         case .normal:      return "figure.walk"
         case .fast:        return "hare.fill"
-        case .superFast:   return "flag.pattern.checkered"
         case .lightening:  return "bolt.fill"
         }
     }
@@ -1022,13 +1018,6 @@ enum GameSpeedOption: Double, CaseIterable {
     /// A custom color for the SF Symbol
     var symbolColor: Color {
         return .black
-//        switch self {
-//        case .slow:        return .green
-//        case .normal:      return .blue
-//        case .fast:        return .red
-//        case .superFast:   return .orange
-//        case .lightening:  return .yellow
-//        }
     }
 }
 
