@@ -136,7 +136,7 @@ class BingoViewModel: ObservableObject {
             [2, 4, 6]  // Diagonal top-right to bottom-left
         ]
     
-    private let defaultNumbersToDraw: Int = 15
+    let defaultNumbersToDraw: Int = 15
     private(set) var numbersToDraw: Int = 15
     private(set) var bonusBalls: Int = 0
 
@@ -427,8 +427,6 @@ class BingoViewModel: ObservableObject {
             ) { error in
                 if let error = error {
                     print("Error submitting score: \(error.localizedDescription)")
-                } else {
-                    print("Score submitted successfully!")
                 }
             }
     }
@@ -707,7 +705,7 @@ class BingoViewModel: ObservableObject {
         numberOfGamesPlayed += 1
         credits += currentGameWinnings
         
-        if bonusBallsOffer == nil && Bool.random() {
+        if bonusBallsOffer == nil && Int.random(in: 1...100) > 25 { // 75% chance of bonus
             bonusBalls = Int.random(in: 1...5)
         }
         

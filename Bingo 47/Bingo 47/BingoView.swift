@@ -223,6 +223,7 @@ struct BingoView: View {
                                 .foregroundColor(.yellow.opacity(0.75))
                         }
                     } else {
+                        let sectionHeight = geometry.size.width * 0.9 / CGFloat(viewModel.defaultNumbersToDraw)
                         let ballSize = (geometry.size.width * 0.9) / CGFloat(viewModel.numbersToDraw)
                         VStack(alignment: .trailing, spacing: 0) {
                             if useBallIndicator {
@@ -235,7 +236,7 @@ struct BingoView: View {
                                     }
                                     Spacer()
                                 }
-                                .frame(height: ballSize + 4)
+                                .frame(height: sectionHeight)
                                 .clipShape(Rectangle())
                                 .onTapGesture(count: 2) {
                                     useBallIndicator.toggle()
@@ -250,7 +251,7 @@ struct BingoView: View {
                                         .font(.subheadline)
                                         .foregroundStyle(Color.white)
                                 }
-                                .frame(height: ballSize + 4)
+                                .frame(height: sectionHeight)
                                 .opacity(viewModel.isGameActive ? 1 : 0)
                                 .animation(.default, value: viewModel.isGameActive)
                                 .onTapGesture(count: 2) {
@@ -265,24 +266,18 @@ struct BingoView: View {
                         let payoutTableHeight = totalHeight * 0.35
                         
                         // MARK:  Payout Table - Dynamically sized
-                        VStack(alignment: .leading, spacing: 0) {
+                        VStack(alignment: .center, spacing: 0) {
                             VStack(spacing: 0) {
-                                ZStack {
-                                    Text("Bingos Win")
-                                        .font(.system(size: payoutTableHeight * 0.08, weight: .bold))
-                                        .opacity(0) // Hidden reference text
-                                    
-                                    HStack {
-                                        Text("Bingos")
-                                            .lineLimit(1)
-                                            .minimumScaleFactor(0.1)
-                                        Spacer()
-                                        Text("Win")
-                                            .lineLimit(1)
-                                            .minimumScaleFactor(0.1)
-                                    }
-                                    .font(.system(size: payoutTableHeight * 0.09, weight: .bold))
+                                HStack {
+                                    Text("Bingos")
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.1)
+                                    Spacer()
+                                    Text("Win")
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.1)
                                 }
+                                .font(.system(size: payoutTableHeight * 0.09, weight: .bold))
                                 .frame(maxWidth: .infinity)
                                 .foregroundColor(.white)
                                 .padding(.horizontal)
@@ -307,7 +302,7 @@ struct BingoView: View {
                                 
                                 Spacer()
                             }
-                            .frame(width: payoutTableWidth)
+//                            .frame(width: payoutTableWidth)
                             .background(Color.blue.opacity(0.75))
                             .cornerRadius(15) // Ensures the container has rounded corners
                             .overlay( // Adds a border with rounded corners
