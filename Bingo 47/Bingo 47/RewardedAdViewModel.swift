@@ -47,7 +47,6 @@ class RewardedAdViewModel: NSObject {
         }
 
         rewardedAd.present(fromRootViewController: rootViewController) { [weak self] in
-            print("🎉 Rewarded ad completed!")
             NotificationCenter.default.post(name: .rewardedAdDidFinish, object: nil)
             self?.adCompletionHandler = nil
             self?.loadAd() // Preload next ad

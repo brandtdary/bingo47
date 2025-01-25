@@ -454,8 +454,6 @@ class BingoViewModel: ObservableObject {
         
         checkBonusBallOffer()
         
-        print("🎉 Number to draw: \(numbersToDraw)")
-
         preGeneratedSpaces = Array(allSpaces.shuffled().prefix(min(numbersToDraw, allSpaces.count))) // Generate exact sequence
         calledSpaces = [] // Reset called spaces
         
@@ -714,15 +712,20 @@ class BingoViewModel: ObservableObject {
     
     @MainActor
     func tryShowingRewardedAd() {
-        guard let offer = self.bonusBallsOffer else { return }
-        
-//#if DEBUG
-//        bonusBalls += offer // ✅ Reward the player
-//        self.bonusBallsOffer = nil
-//        showRewardedAdButton = false // ✅ Hide button after watching
-//        return
-//#endif
-        
+        guard let offer = self.bonusBallsOffer else {
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ No Offer Available...", "function": #function])
+            showRewardedAdButton = false
+            return
+        }
+        guard rewardedAdViewModel?.isAdReady == true else {
+            bonusBalls += offer // ✅ Reward the player
+            self.bonusBallsOffer = nil
+            showRewardedAdButton = false // ✅ Hide button after watching
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ No Ad Available, rewarding the user anyways", "function": #function])
+
+            return
+        }
+                
         rewardedAdViewModel?.showAd { [weak self] in
             guard let self = self else { return }
             self.bonusBalls += offer
@@ -882,7 +885,7 @@ class BingoViewModel: ObservableObject {
         } else if bonusBallOfferCooldown > 0 {
             bonusBallOfferCooldown -= 1
         } else if adIsReady {
-            bonusBallsOffer = Int.random(in: 5...10)
+            bonusBallsOffer = Int.random(in: 6...10)
             bonusBallOfferGamesRemaining = 3
         }
     }

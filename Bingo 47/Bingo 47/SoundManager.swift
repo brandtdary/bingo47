@@ -37,8 +37,6 @@ final class SoundManager {
     private func restartAudioSession() {
         do {
             try AVAudioSession.sharedInstance().setActive(true)
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "✅ Audio session restarted successfully.","function": #function])
-            print("✅ Audio session restarted successfully.")
         } catch {
             NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Failed to restart audio session: \(error.localizedDescription)","function": #function])
             print("❌ Failed to restart audio session: \(error.localizedDescription)")
@@ -59,9 +57,9 @@ final class SoundManager {
             player.prepareToPlay()
             player.play()
 
-            activePlayers.append(player) // ✅ Store reference so sound doesn't stop early
+            activePlayers.append(player)
             DispatchQueue.main.asyncAfter(deadline: .now() + player.duration) {
-                self.activePlayers.removeAll { $0 == player } // ✅ Remove when done
+                self.activePlayers.removeAll { $0 == player }
             }
         } catch {
             NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Error playing sound \(sound.fileName): \(error.localizedDescription)","function": #function])
