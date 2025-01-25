@@ -470,17 +470,6 @@ struct BingoView: View {
             // Error Messages Overlay
             ScrollView {
                 VStack(alignment: .center) {
-                    Button {
-                        viewModel.errorMessages.removeAll()
-                    } label: {
-                        Text("Clear All")
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.blue)
-                            .foregroundStyle(.white)
-                            .cornerRadius(10)
-                    }
-
                     ForEach(viewModel.errorMessages.indices, id: \.self) { index in
                         Text(viewModel.errorMessages[index])
                             .padding()
@@ -492,6 +481,17 @@ struct BingoView: View {
                             .onTapGesture {
                                 viewModel.dismissError(at: index)
                             }
+                    }
+                    
+                    Button {
+                        viewModel.errorMessages.removeAll()
+                    } label: {
+                        Text("Clear All")
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .foregroundStyle(.white)
+                            .cornerRadius(10)
                     }
                 }
                 .padding()
