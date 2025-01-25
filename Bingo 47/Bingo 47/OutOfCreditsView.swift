@@ -28,7 +28,7 @@ struct OutOfCreditsView: View {
             VStack(spacing: 20) {
                 let title = showCloseButton ? "MAKE BINGO GREAT AGAIN!" : "Out of Credits?"
                 Text(title)
-                    .font(.title)
+                    .font(.largeTitle)
                     .lineLimit(1)
                     .minimumScaleFactor(0.1)
                     .bold()

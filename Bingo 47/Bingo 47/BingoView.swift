@@ -223,9 +223,8 @@ struct BingoView: View {
                                 .foregroundColor(.yellow.opacity(0.75))
                         }
                     } else {
-                        
+                        let ballSize = (geometry.size.width * 0.9) / CGFloat(viewModel.numbersToDraw)
                         VStack(alignment: .trailing, spacing: 0) {
-                            let ballSize = (geometry.size.width * 0.9) / CGFloat(viewModel.numbersToDraw)
                             if useBallIndicator {
                                 // Ball Indicator View
                                 HStack(spacing: 1) {
@@ -236,7 +235,7 @@ struct BingoView: View {
                                     }
                                     Spacer()
                                 }
-                                .frame(height: 25)
+                                .frame(height: ballSize + 4)
                                 .clipShape(Rectangle())
                                 .onTapGesture(count: 2) {
                                     useBallIndicator.toggle()
@@ -251,7 +250,7 @@ struct BingoView: View {
                                         .font(.subheadline)
                                         .foregroundStyle(Color.white)
                                 }
-                                .frame(height: 25)
+                                .frame(height: ballSize + 4)
                                 .opacity(viewModel.isGameActive ? 1 : 0)
                                 .animation(.default, value: viewModel.isGameActive)
                                 .onTapGesture(count: 2) {
@@ -266,7 +265,7 @@ struct BingoView: View {
                         let payoutTableHeight = totalHeight * 0.35
                         
                         // MARK:  Payout Table - Dynamically sized
-                        VStack(spacing: 0) {
+                        VStack(alignment: .leading, spacing: 0) {
                             VStack(spacing: 0) {
                                 ZStack {
                                     Text("Bingos Win")
@@ -362,7 +361,7 @@ struct BingoView: View {
                                     }
                                     .foregroundColor(.black)
                                     .padding(8)
-                                    .frame(maxWidth: .infinity)
+                                    .frame(maxWidth: 300)
                                     .frame(height: 44)
                                     .background(Color.gold.dimmedIf(viewModel.isGameActive))
                                     .cornerRadius(15)
@@ -559,13 +558,16 @@ struct BingoView: View {
                 } label: {
                     Text("COLLECT")
                         .font(.largeTitle).bold()
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.1)
-                        .background(Color.green)
-                        .foregroundStyle(.white)
                         .padding()
                         .frame(maxWidth: .infinity)
+                        .background(Color.green)
+                        .foregroundColor(.white)
                         .cornerRadius(15)
+                        .transition(.opacity)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.1)
+
+
                 }
             }
             .onAppear {
