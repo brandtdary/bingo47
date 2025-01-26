@@ -12,8 +12,6 @@ import GoogleMobileAds
 struct Bingo_47App: App {
     init() {
         GADMobileAds.sharedInstance().start(completionHandler: nil)
-        _ = SoundManager.shared
-        
     }
 
     var body: some Scene {

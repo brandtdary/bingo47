@@ -10,7 +10,7 @@ import AVFoundation
 
 final class SoundManager {
     static let shared = SoundManager()
-    private var activePlayers: [AVAudioPlayer] = [] // Keeps sounds from stopping early
+    private var soundPools: [Sound: [AVAudioPlayer]] = [:]
 
     private init() {
         setupAudioSession()
@@ -46,25 +46,41 @@ final class SoundManager {
 
 
     func playSound(_ sound: Sound) {
+        // Ensure the sound file exists
         guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
             print("❌ Sound file \(sound.fileName).\(sound.fileExtension) not found.")
             NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Sound file \(sound.fileName).\(sound.fileExtension) not found.","function": #function])
             return
         }
-
+        
+        // Check for an available player
+        if let pool = soundPools[sound] { // ✅ Changed 'var' to 'let'
+            if let availablePlayer = pool.first(where: { !$0.isPlaying }) {
+                availablePlayer.currentTime = 0  // Reset to start
+                availablePlayer.play()
+                return
+            }
+        } else {
+            soundPools[sound] = [] // Initialize pool if not exists
+        }
+        
+        // No available player, create a new one
         do {
             let player = try AVAudioPlayer(contentsOf: url)
             player.prepareToPlay()
             player.play()
-
-            activePlayers.append(player)
-            DispatchQueue.main.asyncAfter(deadline: .now() + player.duration) {
-                self.activePlayers.removeAll { $0 == player }
-            }
+            
+            soundPools[sound]?.append(player) // Add to the pool
         } catch {
             NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Error playing sound \(sound.fileName): \(error.localizedDescription)","function": #function])
             print("❌ Error playing sound \(sound.fileName): \(error.localizedDescription)")
         }
+    }
+
+    
+    deinit {
+        NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ SoundManager is being deallocated unexpectedly!","function": #function])
+        print("❌ SoundManager is being deallocated unexpectedly!")
     }
 }
 

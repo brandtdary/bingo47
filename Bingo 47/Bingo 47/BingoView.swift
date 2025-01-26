@@ -204,6 +204,7 @@ struct BingoView: View {
                                         Label("Speak Numbers", systemImage: "speaker.wave.3.fill")
                                     }
                                     .toggleStyle(SwitchToggleStyle())
+                                    .disabled(viewModel.gameSpeed == .fast || viewModel.gameSpeed == .lightening) // ✅ Disable when speed is Fast or Very Fast
 
                                     // Game Speed Selection
                                     VStack(alignment: .leading, spacing: 8) {

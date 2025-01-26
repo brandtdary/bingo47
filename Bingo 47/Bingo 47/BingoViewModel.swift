@@ -54,7 +54,14 @@ class BingoViewModel: ObservableObject {
 
     var gameSpeed: GameSpeedOption {
         get { GameSpeedOption(rawValue: storedGameSpeed) ?? .normal }
-        set { storedGameSpeed = newValue.rawValue }
+        set {
+            storedGameSpeed = newValue.rawValue
+
+            // Disable speaking numbers if the speed is fast or lightning
+            if newValue == .fast || newValue == .lightening {
+                speakSpaces = false
+            }
+        }
     }
     
     var currentBet: Int {
@@ -412,7 +419,7 @@ class BingoViewModel: ObservableObject {
     
     // MARK: Game Center
     func submitScoreToLeaderboard(score: Int) {
-        let leaderboardID = "com.gudmilk.bingo47.leaderboards.credits" // Replace with your leaderboard's ID
+        let leaderboardID = "com.gudmilk.bingo47.leaderboards.credits"  
         guard GKLocalPlayer.local.isAuthenticated else {
                 print("Local player is not authenticated")
                 return
