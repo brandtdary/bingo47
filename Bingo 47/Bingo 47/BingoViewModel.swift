@@ -92,8 +92,8 @@ class BingoViewModel: ObservableObject {
     private let jackpotStorageKey = "jackpotStorage"
     static let bonusSpaceID = "47"
     
-    let rewardAdUnitID = "ca-app-pub-3940256099942544/1712485313" // TEST
-//    let rewardAdUnitID = "ca-app-pub-6362408680341882/7080298722" // REAL
+//    let rewardAdUnitID = "ca-app-pub-3940256099942544/1712485313" // TEST
+    let rewardAdUnitID = "ca-app-pub-6362408680341882/7080298722" // REAL
     
     @MainActor
     private(set) var rewardedAdViewModel: RewardedAdViewModel?

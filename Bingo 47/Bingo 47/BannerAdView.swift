@@ -9,8 +9,8 @@ import SwiftUI
 import GoogleMobileAds
 
 struct BannerAdView: UIViewRepresentable {
-    let adUnitID = "ca-app-pub-3940256099942544/2934735716" // TEST
-//    let adUnitID = "ca-app-pub-6362408680341882/2676851997" // REAL
+//    let adUnitID = "ca-app-pub-3940256099942544/2934735716" // TEST
+    let adUnitID = "ca-app-pub-6362408680341882/2676851997" // REAL
 
     @Binding var isAdLoaded: Bool
 
