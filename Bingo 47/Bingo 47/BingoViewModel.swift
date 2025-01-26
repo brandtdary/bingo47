@@ -524,7 +524,7 @@ class BingoViewModel: ObservableObject {
         let newCount = currentCount + betMultiplier
         jackpotStorage[betMultiplier] = newCount
 
-        lastJackpotCount = currentCount // Start from the previous count
+        lastJackpotCount = newCount
         animatedJackpotCount = currentCount
         showJackpotAnimation = true // Make the animation view visible
 
@@ -550,7 +550,7 @@ class BingoViewModel: ObservableObject {
                     self.animatedJackpotCount += aproximateStep
                 }
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (duration * 1.05)) {
                 self.animatedJackpotCount = finalValue
             }
         }
@@ -566,17 +566,17 @@ class BingoViewModel: ObservableObject {
     }
 
     private func claimJackpot() {
-        let jackpotCount = jackpotStorage[betMultiplier, default: 0]
+        let jackpotCount = jackpotStorage[betMultiplier, default: lastJackpotCount]
         let totalPrize = jackpotCount * 47
         
         if jackpotCount > 0 {
             let jackpotStartingPoint = betMultiplier * 20
             credits += totalPrize
-            jackpotStorage[betMultiplier] = jackpotStartingPoint // Reset jackpot
             lastJackpotAmount = totalPrize
             lastJackpotCount = jackpotCount
             showJackpotSheet = true
             
+            jackpotStorage[betMultiplier] = jackpotStartingPoint // Reset jackpot
             animatedJackpotCount = jackpotStorage[betMultiplier] ?? jackpotStartingPoint
         }
     }
@@ -710,7 +710,7 @@ class BingoViewModel: ObservableObject {
         credits += currentGameWinnings
         
         if bonusBallsOffer == nil && Int.random(in: 1...100) > 25 { // 75% chance of bonus
-            bonusBalls = Int.random(in: 1...5)
+            bonusBalls = Int.random(in: 5...10)
         }
         
         
@@ -892,7 +892,7 @@ class BingoViewModel: ObservableObject {
         } else if bonusBallOfferCooldown > 0 {
             bonusBallOfferCooldown -= 1
         } else if adIsReady {
-            bonusBallsOffer = Int.random(in: 6...10)
+            bonusBallsOffer = Int.random(in: 10...15)
             bonusBallOfferGamesRemaining = 3
         }
     }
