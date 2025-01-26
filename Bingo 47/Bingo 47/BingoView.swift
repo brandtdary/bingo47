@@ -630,6 +630,7 @@ struct BingoView: View {
                 OutOfCreditsView(showCloseButton: allowClose, showLowerBetButton: showLowerBetButton, isVisible: $showOutOfCredits, viewModel: viewModel)
             }
             
+#if DEBUG
             // Error Messages Overlay
             ScrollView {
                 VStack(alignment: .center) {
@@ -662,7 +663,7 @@ struct BingoView: View {
             }
             .frame(maxHeight: viewModel.errorMessages.isEmpty ? 0 : .infinity) // Prevent it from taking too much space
             .animation(.easeInOut, value: viewModel.errorMessages)
-            
+#endif
             
         }
         .onAppear {

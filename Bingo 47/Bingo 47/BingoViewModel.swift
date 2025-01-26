@@ -147,8 +147,9 @@ class BingoViewModel: ObservableObject {
     private(set) var bonusBalls: Int = 0
 
     init() {
+#if DEBUG
         observeSoundErrors()
-
+#endif
         resetGame()
         loadOrGenerateCards()
         
