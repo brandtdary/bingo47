@@ -710,7 +710,7 @@ class BingoViewModel: ObservableObject {
         credits += currentGameWinnings
         
         if bonusBallsOffer == nil && Int.random(in: 1...100) > 25 { // 75% chance of bonus
-            bonusBalls = Int.random(in: 5...10)
+            bonusBalls = Int.random(in: 1...5)
         }
         
         
@@ -892,7 +892,7 @@ class BingoViewModel: ObservableObject {
         } else if bonusBallOfferCooldown > 0 {
             bonusBallOfferCooldown -= 1
         } else if adIsReady {
-            bonusBallsOffer = Int.random(in: 10...15)
+            bonusBallsOffer = Int.random(in: 6...12)
             bonusBallOfferGamesRemaining = 3
         }
     }
