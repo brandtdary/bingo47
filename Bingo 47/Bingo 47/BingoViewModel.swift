@@ -1082,10 +1082,19 @@ extension Int {
     private static let sharedFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 1
+        formatter.maximumFractionDigits = 1
         return formatter
     }()
+
+    private static let sharedSmallNumberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 0
+        return formatter
+    }()
+
     
     func formatted(shortened: Bool = false) -> String {
         guard shortened else {
@@ -1093,8 +1102,10 @@ extension Int {
         }
         
         switch self {
+        case 999..<100_000:
+            return "\(Int.sharedSmallNumberFormatter.string(for: Double(self)) ?? "0")"
         case 100_000..<1_000_000:
-            return "\(Int.sharedFormatter.string(for: Double(self) / 1_000) ?? "0") K"
+            return "\(Int.sharedSmallNumberFormatter.string(for: Double(self) / 1_000) ?? "0") K"
         case 1_000_000..<1_000_000_000:
             return "\(Int.sharedFormatter.string(for: Double(self) / 1_000_000) ?? "0") M"
         case 1_000_000_000..<1_000_000_000_000:

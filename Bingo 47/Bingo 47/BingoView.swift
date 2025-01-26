@@ -63,11 +63,11 @@ struct BingoView: View {
                                 Image("47bill")
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(maxWidth: cardSize / 4)
+                                    .frame(maxWidth: cardSize / 3.5)
 
                                 // Single Jackpot Counter
                                 Text("x \(viewModel.animatedJackpotCount.formatted(shortened: true))")
-                                    .font(.system(size: cardSize / 10)).bold()
+                                    .font(.system(size: cardSize / 11)).bold()
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.25)
                                     .foregroundColor(.white)
