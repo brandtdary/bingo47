@@ -1093,7 +1093,7 @@ extension Int {
         }
         
         switch self {
-        case 1_000..<1_000_000:
+        case 100_000..<1_000_000:
             return "\(Int.sharedFormatter.string(for: Double(self) / 1_000) ?? "0") K"
         case 1_000_000..<1_000_000_000:
             return "\(Int.sharedFormatter.string(for: Double(self) / 1_000_000) ?? "0") M"
