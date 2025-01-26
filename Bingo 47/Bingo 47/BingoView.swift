@@ -16,6 +16,7 @@ struct BingoView: View {
     @State private var showGameCenter = false
     @State private var isAuthenticated = false
     @State private var showSettingsMenu = false
+    @State private var isCopied = false
 
     // MARK: Ads
     @State private var isAdLoaded: Bool = false
@@ -72,7 +73,7 @@ struct BingoView: View {
                                     .minimumScaleFactor(0.25)
                                     .foregroundColor(.white)
                             }
-                            .offset(x: viewModel.shouldShowJackpotDisplay() ? -((cardSize / 2) + 45) : 0)
+                            .offset(x: viewModel.shouldShowJackpotDisplay() ? -((cardSize / 2) + 55) : 0)
                             .animation(.spring, value: viewModel.shouldShowJackpotDisplay())
                         
                         
@@ -189,22 +190,42 @@ struct BingoView: View {
 
                                     // Auto-Mark Toggle
                                     Toggle(isOn: $viewModel.autoMark) {
-                                        Label("Auto-Mark", systemImage: "checkmark.square")
+                                        Label {
+                                            Text("Auto-Mark")
+                                        } icon: {
+                                            Image(systemName: "checkmark.circle")
+                                                .frame(width: 48, alignment: .center)
+                                        }
                                     }
                                     .toggleStyle(SwitchToggleStyle())
 
                                     // Vibration Toggle
                                     Toggle(isOn: $viewModel.vibrationEnabled) {
-                                        Label("Vibration", systemImage: "iphone.radiowaves.left.and.right")
+                                        Label {
+                                            Text("Vibration")
+                                        } icon: {
+                                            Image(systemName: "iphone.radiowaves.left.and.right.circle")
+                                                .frame(width: 48, alignment: .center)
+                                        }
                                     }
                                     .toggleStyle(SwitchToggleStyle())
 
                                     // Speak Numbers Toggle
                                     Toggle(isOn: $viewModel.speakSpaces) {
-                                        Label("Speak Numbers", systemImage: "speaker.wave.3.fill")
+                                        Label {
+                                            Text("Speak Numbers")
+                                        } icon: {
+                                            Image(systemName: "speaker.wave.2.circle")
+                                                .frame(width: 48, alignment: .center)
+                                        }
                                     }
                                     .toggleStyle(SwitchToggleStyle())
-                                    .disabled(viewModel.gameSpeed == .fast || viewModel.gameSpeed == .lightening) // ✅ Disable when speed is Fast or Very Fast
+                                    .disabled(viewModel.gameSpeed == .fast || viewModel.gameSpeed == .lightening)
+                                    
+                                    Text("Speaking numbers requires that you be playing on **Slow** or **Normal** speed.")
+                                        .font(.footnote)
+                                        .padding(.leading, 56)
+                                        .padding(.bottom, 16)
 
                                     // Game Speed Selection
                                     VStack(alignment: .leading, spacing: 8) {
@@ -220,14 +241,94 @@ struct BingoView: View {
                                         .pickerStyle(.segmented)
                                         .padding(.vertical, 8)
                                     }
-                                    // Close Button
-                                    Button("Close") {
-                                        showSettingsMenu = false
+                                    
+                                    Spacer()
+
+                                    VStack(alignment: .center, spacing: 24) {
+                                        Button("RETURN TO GAME") {
+                                            showSettingsMenu = false
+                                        }
+                                        .font(.title3).bold()
+                                        .foregroundColor(.yellow)
+                                        
+                                        Button("MORE FUN GAMES") {
+                                            if let url = URL(string: "https://gudmilk.com") {
+                                                UIApplication.shared.open(url)
+                                            }
+                                        }
+                                        .font(.title3).bold()
+                                        .foregroundColor(.yellow)
                                     }
-                                    .padding(.top, 12)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    
+                                    
+                                    Section(header: Text("Support").font(.headline).foregroundColor(.white)) {
+                                        // Website Link
+                                        Text("GudMilk.com")
+                                            .font(.headline)
+                                            .foregroundColor(.blue)
+                                            .onTapGesture {
+                                                if let url = URL(string: "https://gudmilk.com") {
+                                                    UIApplication.shared.open(url)
+                                                }
+                                            }
+                                        
+                                        // Email Support with Copy Option
+                                        HStack(spacing: 8) {
+                                            let supportEmail = "support@gudmilk.com"
+                                            
+                                            // Email Address (opens default email client)
+                                            Text(supportEmail)
+                                                .font(.body)
+                                                .foregroundColor(.blue)
+                                                .onTapGesture {
+                                                    let subject = "Bingo 47 Support"
+                                                    let emailURL = "mailto:\(supportEmail)?subject=\(subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+                                                    if let url = URL(string: emailURL) {
+                                                        UIApplication.shared.open(url)
+                                                    }
+                                                }
+                                            
+                                            // Copy to Clipboard Icon
+                                            Image(systemName: "doc.on.doc") // Clipboard icon
+                                                .foregroundColor(.blue)
+                                                .onTapGesture {
+                                                    HapticManager.shared.triggerHaptic(for: .choose)
+                                                    UIPasteboard.general.string = supportEmail
+                                                    isCopied = true
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                                        isCopied = false
+                                                    }
+                                                }
+                                            
+                                            // Copied Feedback
+                                            if isCopied {
+                                                Text("Copied!")
+                                                    .font(.footnote)
+                                                    .foregroundColor(.green)
+                                                    .transition(.opacity)
+                                            }
+                                        }
+                                    }
+                                    
+                                    // MARK: App Info
+                                    VStack(alignment: .center, spacing: 4) {
+                                        Text("© 2025 Gud Milk")
+                                            .font(.footnote)
+                                            .foregroundColor(.gray)
+                                        
+                                        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+                                           let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
+                                            Text("Version \(appVersion) (\(buildNumber))")
+                                                .font(.footnote)
+                                                .foregroundColor(.gray)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .padding()
                                 }
                                 .padding()
-                                .presentationDetents([.medium, .large]) // 🛑 THIS CONTROLS THE HEIGHT
                                 .presentationDragIndicator(.visible) // Shows a grabber at the top
                             }
                             
@@ -271,6 +372,7 @@ struct BingoView: View {
                         }
                     }
                     
+                    let sectionHeight = geometry.size.width * 0.9 / CGFloat(viewModel.defaultNumbersToDraw)
                     if viewModel.isLastCallActive {
                         HStack(spacing: 4) {
                             Text("Last Call!")
@@ -282,8 +384,9 @@ struct BingoView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.yellow.opacity(0.75))
                         }
+                        .frame(height: sectionHeight)
+
                     } else {
-                        let sectionHeight = geometry.size.width * 0.9 / CGFloat(viewModel.defaultNumbersToDraw)
                         let ballSize = (geometry.size.width * 0.9) / CGFloat(viewModel.numbersToDraw)
                         VStack(alignment: .trailing, spacing: 0) {
                             if useBallIndicator {
