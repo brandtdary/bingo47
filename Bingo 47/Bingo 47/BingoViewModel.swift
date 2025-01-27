@@ -153,7 +153,7 @@ class BingoViewModel: ObservableObject {
         resetGame()
         loadOrGenerateCards()
         
-        animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
+        animatedJackpotCount = jackpotStorage[betMultiplier, default: betMultiplier * 20]
         
         Task { @MainActor in
             self.checkBonusBallOffer()
@@ -367,7 +367,7 @@ class BingoViewModel: ObservableObject {
         payoutTable = generatePayoutTable()
         
         // Update animated jackpot count based on new bet multiplier
-        animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
+        animatedJackpotCount = jackpotStorage[betMultiplier, default: betMultiplier * 20]
     }
 
     @MainActor func lowerBetToMaxPossible() {
@@ -385,7 +385,7 @@ class BingoViewModel: ObservableObject {
         HapticManager.shared.triggerHaptic(for: .soft)
         
         // Update animated jackpot count after lowering bet
-        animatedJackpotCount = jackpotStorage[betMultiplier, default: 0]
+        animatedJackpotCount = jackpotStorage[betMultiplier, default: betMultiplier * 20]
     }
 
     
@@ -521,7 +521,7 @@ class BingoViewModel: ObservableObject {
     
     /// Adds to the jackpot and animates the count increase
     func addToJackpotWithAnimation() {
-        let currentCount = jackpotStorage[betMultiplier, default: betMultiplier]
+        let currentCount = jackpotStorage[betMultiplier, default: betMultiplier * 20]
         let newCount = currentCount + betMultiplier
         jackpotStorage[betMultiplier] = newCount
 

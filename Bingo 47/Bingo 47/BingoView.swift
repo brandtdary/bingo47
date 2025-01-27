@@ -556,9 +556,7 @@ struct BingoView: View {
                                         .font(.title).bold()
                                         .minimumScaleFactor(0.15)
                                         .foregroundStyle(Color.white)
-                                        .onLongPressGesture(minimumDuration: 0.75) {
-                                            viewModel.resetCredits()
-                                        }
+
                                     Text("Credits")
                                         .font(.title3)
                                         .minimumScaleFactor(0.15)
