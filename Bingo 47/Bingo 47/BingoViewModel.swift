@@ -322,9 +322,9 @@ class BingoViewModel: ObservableObject {
     /// Increases credits based on product ID
     private func addCredits(for productID: String) {
         switch productID {
-        case IAPManager.productCreditsTier1ID: credits += 1000
-        case IAPManager.productCreditsTier2ID: credits += 10000
-        case IAPManager.productCreditsTier3ID: credits += 75000
+        case IAPManager.productCreditsTier1ID: credits += 10_000
+        case IAPManager.productCreditsTier2ID: credits += 100_000
+        case IAPManager.productCreditsTier3ID: credits += 1_000_000
         default: print("⚠️ Unknown product ID: \(productID)")
         }
         soundManager.playSound(.purchasedChips)
