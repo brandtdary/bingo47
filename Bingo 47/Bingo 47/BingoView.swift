@@ -66,15 +66,14 @@ struct BingoView: View {
                                     .scaledToFit()
                                     .frame(maxWidth: cardSize / 3.5)
 
-                                // Single Jackpot Counter
                                 Text("x \(viewModel.animatedJackpotCount.formatted(shortened: true))")
                                     .font(.system(size: cardSize / 11)).bold()
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.25)
                                     .foregroundColor(.white)
                             }
-                            .offset(x: viewModel.shouldShowJackpotDisplay() ? -((cardSize / 2) + 55) : 0)
-                            .animation(.spring, value: viewModel.shouldShowJackpotDisplay())
+                        .offset(x: viewModel.shouldShowJackpotDisplay() ? -((cardSize / 2) + (cardSize / 4)) : 0)
+                        .animation(.spring, value: viewModel.shouldShowJackpotDisplay())
                         
                         
                         VStack(spacing: 16) {
@@ -182,154 +181,156 @@ struct BingoView: View {
                                     .foregroundColor(.yellow.dimmedIf(viewModel.isGameActive))
                             }
                             .sheet(isPresented: $showSettingsMenu) {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text("Game Settings")
-                                        .font(.title)
-                                        .bold()
-                                        .padding(.bottom, 8)
-
-                                    // Auto-Mark Toggle
-                                    Toggle(isOn: $viewModel.autoMark) {
-                                        Label {
-                                            Text("Auto-Mark")
-                                        } icon: {
-                                            Image(systemName: "checkmark.circle")
-                                                .frame(width: 48, alignment: .center)
-                                        }
-                                    }
-                                    .toggleStyle(SwitchToggleStyle())
-
-                                    // Vibration Toggle
-                                    Toggle(isOn: $viewModel.vibrationEnabled) {
-                                        Label {
-                                            Text("Vibration")
-                                        } icon: {
-                                            Image(systemName: "iphone.radiowaves.left.and.right.circle")
-                                                .frame(width: 48, alignment: .center)
-                                        }
-                                    }
-                                    .toggleStyle(SwitchToggleStyle())
-
-                                    // Speak Numbers Toggle
-                                    Toggle(isOn: $viewModel.speakSpaces) {
-                                        Label {
-                                            Text("Speak Numbers")
-                                        } icon: {
-                                            Image(systemName: "speaker.wave.2.circle")
-                                                .frame(width: 48, alignment: .center)
-                                        }
-                                    }
-                                    .toggleStyle(SwitchToggleStyle())
-                                    .disabled(viewModel.gameSpeed == .fast || viewModel.gameSpeed == .lightening)
-                                    
-                                    Text("Speaking numbers requires that you be playing on **Slow** or **Normal** speed.")
-                                        .font(.footnote)
-                                        .padding(.leading, 56)
-                                        .padding(.bottom, 16)
-
-                                    // Game Speed Selection
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text("Game Speed")
-                                            .font(.headline)
+                                ScrollView {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        Text("Game Settings")
+                                            .font(.title)
                                             .bold()
-
-                                        Picker("Game Speed", selection: $viewModel.gameSpeed) {
-                                            ForEach(GameSpeedOption.allCases, id: \.self) { speed in
-                                                Text(speed.label).tag(speed)
-                                            }
-                                        }
-                                        .pickerStyle(.segmented)
-                                        .padding(.vertical, 8)
-                                    }
-                                    
-                                    Spacer()
-
-                                    VStack(alignment: .center, spacing: 24) {
-                                        Button("RETURN TO GAME") {
-                                            showSettingsMenu = false
-                                        }
-                                        .font(.title3).bold()
-                                        .foregroundColor(.yellow)
+                                            .padding(.bottom, 8)
                                         
-                                        Button("MORE FUN GAMES") {
-                                            if let url = URL(string: "https://gudmilk.com") {
-                                                UIApplication.shared.open(url)
+                                        // Auto-Mark Toggle
+                                        Toggle(isOn: $viewModel.autoMark) {
+                                            Label {
+                                                Text("Auto-Mark")
+                                            } icon: {
+                                                Image(systemName: "checkmark.circle")
+                                                    .frame(width: 48, alignment: .center)
                                             }
                                         }
-                                        .font(.title3).bold()
-                                        .foregroundColor(.yellow)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    
-                                    
-                                    Section(header: Text("Support").font(.headline).foregroundColor(.white)) {
-                                        // Website Link
-                                        Text("GudMilk.com")
-                                            .font(.headline)
-                                            .foregroundColor(.blue)
-                                            .onTapGesture {
+                                        .toggleStyle(SwitchToggleStyle())
+                                        
+                                        // Vibration Toggle
+                                        Toggle(isOn: $viewModel.vibrationEnabled) {
+                                            Label {
+                                                Text("Vibration")
+                                            } icon: {
+                                                Image(systemName: "iphone.radiowaves.left.and.right.circle")
+                                                    .frame(width: 48, alignment: .center)
+                                            }
+                                        }
+                                        .toggleStyle(SwitchToggleStyle())
+                                        
+                                        // Speak Numbers Toggle
+                                        Toggle(isOn: $viewModel.speakSpaces) {
+                                            Label {
+                                                Text("Speak Numbers")
+                                            } icon: {
+                                                Image(systemName: "speaker.wave.2.circle")
+                                                    .frame(width: 48, alignment: .center)
+                                            }
+                                        }
+                                        .toggleStyle(SwitchToggleStyle())
+                                        .disabled(viewModel.gameSpeed == .fast || viewModel.gameSpeed == .lightening)
+                                        
+                                        Text("Speaking numbers requires that you be playing on **Slow** or **Normal** speed.")
+                                            .font(.footnote)
+                                            .padding(.leading, 56)
+                                            .padding(.bottom, 16)
+                                        
+                                        // Game Speed Selection
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            Text("Game Speed")
+                                                .font(.headline)
+                                                .bold()
+                                            
+                                            Picker("Game Speed", selection: $viewModel.gameSpeed) {
+                                                ForEach(GameSpeedOption.allCases, id: \.self) { speed in
+                                                    Text(speed.label).tag(speed)
+                                                }
+                                            }
+                                            .pickerStyle(.segmented)
+                                            .padding(.vertical, 8)
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        VStack(alignment: .center, spacing: 16) {
+                                            Button("RETURN TO GAME") {
+                                                showSettingsMenu = false
+                                            }
+                                            .font(.headline).bold()
+                                            .foregroundColor(.yellow)
+                                            
+                                            Button("MORE FUN GAMES") {
                                                 if let url = URL(string: "https://gudmilk.com") {
                                                     UIApplication.shared.open(url)
                                                 }
                                             }
+                                            .font(.headline).bold()
+                                            .foregroundColor(.yellow)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
                                         
-                                        // Email Support with Copy Option
-                                        HStack(spacing: 8) {
-                                            let supportEmail = "support@gudmilk.com"
-                                            
-                                            // Email Address (opens default email client)
-                                            Text(supportEmail)
-                                                .font(.body)
+                                        
+                                        Section(header: Text("Support").font(.headline).foregroundColor(.white)) {
+                                            // Website Link
+                                            Text("GudMilk.com")
+                                                .font(.headline)
                                                 .foregroundColor(.blue)
                                                 .onTapGesture {
-                                                    let subject = "Bingo 47 Support"
-                                                    let emailURL = "mailto:\(supportEmail)?subject=\(subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
-                                                    if let url = URL(string: emailURL) {
+                                                    if let url = URL(string: "https://gudmilk.com") {
                                                         UIApplication.shared.open(url)
                                                     }
                                                 }
                                             
-                                            // Copy to Clipboard Icon
-                                            Image(systemName: "doc.on.doc") // Clipboard icon
-                                                .foregroundColor(.blue)
-                                                .onTapGesture {
-                                                    HapticManager.shared.triggerHaptic(for: .choose)
-                                                    UIPasteboard.general.string = supportEmail
-                                                    isCopied = true
-                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                                        isCopied = false
+                                            // Email Support with Copy Option
+                                            HStack(spacing: 8) {
+                                                let supportEmail = "support@gudmilk.com"
+                                                
+                                                // Email Address (opens default email client)
+                                                Text(supportEmail)
+                                                    .font(.body)
+                                                    .foregroundColor(.blue)
+                                                    .onTapGesture {
+                                                        let subject = "Bingo 47 Support"
+                                                        let emailURL = "mailto:\(supportEmail)?subject=\(subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+                                                        if let url = URL(string: emailURL) {
+                                                            UIApplication.shared.open(url)
+                                                        }
                                                     }
+                                                
+                                                // Copy to Clipboard Icon
+                                                Image(systemName: "doc.on.doc") // Clipboard icon
+                                                    .foregroundColor(.blue)
+                                                    .onTapGesture {
+                                                        HapticManager.shared.triggerHaptic(for: .choose)
+                                                        UIPasteboard.general.string = supportEmail
+                                                        isCopied = true
+                                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                                            isCopied = false
+                                                        }
+                                                    }
+                                                
+                                                // Copied Feedback
+                                                if isCopied {
+                                                    Text("Copied!")
+                                                        .font(.footnote)
+                                                        .foregroundColor(.green)
+                                                        .transition(.opacity)
                                                 }
-                                            
-                                            // Copied Feedback
-                                            if isCopied {
-                                                Text("Copied!")
-                                                    .font(.footnote)
-                                                    .foregroundColor(.green)
-                                                    .transition(.opacity)
                                             }
                                         }
-                                    }
-                                    
-                                    // MARK: App Info
-                                    VStack(alignment: .center, spacing: 4) {
-                                        Text("© 2025 Gud Milk")
-                                            .font(.footnote)
-                                            .foregroundColor(.gray)
                                         
-                                        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
-                                           let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
-                                            Text("Version \(appVersion) (\(buildNumber))")
+                                        // MARK: App Info
+                                        VStack(alignment: .center, spacing: 4) {
+                                            Text("© 2025 Gud Milk")
                                                 .font(.footnote)
                                                 .foregroundColor(.gray)
+                                            
+                                            if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+                                               let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
+                                                Text("Version \(appVersion) (\(buildNumber))")
+                                                    .font(.footnote)
+                                                    .foregroundColor(.gray)
+                                            }
                                         }
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .padding()
                                     }
-                                    .frame(maxWidth: .infinity, alignment: .center)
                                     .padding()
+                                    .presentationDragIndicator(.visible)
                                 }
-                                .padding()
-                                .presentationDragIndicator(.visible) // Shows a grabber at the top
                             }
                             
                             // MARK: Edit Cards
