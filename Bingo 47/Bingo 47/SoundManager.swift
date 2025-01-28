@@ -1,55 +1,67 @@
 //
 //  SoundManager.swift
-//  GudBingo
+//  Bingo 47
 //
 //  Created by Brandt Dary on 12/21/24.
 //
 
 import UIKit
-import AVFoundation
+import AVFAudio
 
 final class SoundManager {
     static let shared = SoundManager()
     private var soundPools: [Sound: [AVAudioPlayer]] = [:]
 
     private init() {
-        setupAudioSession()
+        configureAudioSession()
         NotificationCenter.default.addObserver(self, selector: #selector(restartAudioAfterAd), name: .rewardedAdDidFinish, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleAudioInterruption), name: AVAudioSession.interruptionNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+
     }
 
-    private func setupAudioSession() {
+    @objc private func handleAudioInterruption(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else { return }
+
+        switch type {
+        case .began:
+            print("🔇 Audio session interrupted.")
+        case .ended:
+            configureAudioSession()
+        @unknown default:
+            break
+        }
+    }
+    
+    private func configureAudioSession() {
         let session = AVAudioSession.sharedInstance()
         do {
             try session.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
             try session.setActive(true)
-            print("✅ Audio session set up successfully.")
+            print("🎵 Audio session configured successfully.")
         } catch {
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Failed to set up audio session: \(error.localizedDescription)","function": #function])
-            print("❌ Failed to set up audio session: \(error.localizedDescription)")
+            let errorMessage = "❌ Failed to configure audio session: \(error.localizedDescription)"
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
+            print(errorMessage)
         }
     }
     
     @objc private func restartAudioAfterAd() {
-        print("🔄 Restarting audio session after ad...")
-        restartAudioSession()
+        configureAudioSession()
     }
     
-    private func restartAudioSession() {
-        do {
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Failed to restart audio session: \(error.localizedDescription)","function": #function])
-            print("❌ Failed to restart audio session: \(error.localizedDescription)")
-        }
+    @objc private func appDidBecomeActive() {
+        configureAudioSession()
     }
-
-
-
+    
     func playSound(_ sound: Sound) {
         // Ensure the sound file exists
         guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
-            print("❌ Sound file \(sound.fileName).\(sound.fileExtension) not found.")
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Sound file \(sound.fileName).\(sound.fileExtension) not found.","function": #function])
+            let errorMessage = "❌ Sound file \(sound.fileName).\(sound.fileExtension) not found."
+            print(errorMessage)
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
             return
         }
         
@@ -72,15 +84,17 @@ final class SoundManager {
             
             soundPools[sound]?.append(player) // Add to the pool
         } catch {
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Error playing sound \(sound.fileName): \(error.localizedDescription)","function": #function])
-            print("❌ Error playing sound \(sound.fileName): \(error.localizedDescription)")
+            let errorMessage = "❌ Error playing sound \(sound.fileName): \(error.localizedDescription)"
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
+            print(errorMessage)
         }
     }
 
     
     deinit {
-        NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ SoundManager is being deallocated unexpectedly!","function": #function])
-        print("❌ SoundManager is being deallocated unexpectedly!")
+        let errorMessage = "❌ SoundManager is being deallocated unexpectedly!"
+        NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
+        print(errorMessage)
     }
 }
 
