@@ -676,7 +676,9 @@ struct BingoView: View {
         .onAppear {
             authenticateUser()
         }
-
+        .sheet(isPresented: $viewModel.showGameModeSelection) {
+            GameModeSelectionView(isPresented: $viewModel.showGameModeSelection)
+        }
         .sheet(isPresented: $showFavoritesSheet) {
             CardChooserView(viewModel: viewModel)
         }

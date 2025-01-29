@@ -27,6 +27,7 @@ class BingoViewModel: ObservableObject {
     @Published var isProcessingPurchase: Bool = false
     @Published var activeBingoSpaceColor: Color = .yellow
     @Published var activeDauberColor: Color = .green
+    @Published var showGameModeSelection: Bool = !UserDefaults.standard.bool(forKey: GameSettingsKeys.hasSeenGameModeSelection)
     
     // MARK: BONUS
     @Published var showJackpotSheet: Bool = false
@@ -75,14 +76,15 @@ class BingoViewModel: ObservableObject {
     @AppStorage("dauberColorChoice") var dauberColorChoice: String = BingoColor.red.rawValue
     @AppStorage("numberOfGamesPlayed") var numberOfGamesPlayed: Int = 0
     @AppStorage("numberOfBingos") var numberOfBingos: Int = 0
-    
     @AppStorage("betMultiplier") var betMultiplier: Int = 1 // Bet multiplier
-    @AppStorage("speakSpaces") var speakSpaces: Bool = true
-    @AppStorage("autoMark") var autoMark: Bool = false
-    @AppStorage("gameSpeed") private var storedGameSpeed: Double = GameSpeedOption.normal.rawValue
-    @AppStorage("vibrationEnabled") var vibrationEnabled: Bool = true
-    @AppStorage("gracefulBingos") var gracefulBingos: Bool = false
-
+    
+    
+    @AppStorage(GameSettingsKeys.speakSpaces) var speakSpaces: Bool = true
+    @AppStorage(GameSettingsKeys.autoMark) var autoMark: Bool = false
+    @AppStorage(GameSettingsKeys.gameSpeed) private var storedGameSpeed: Double = GameSpeedOption.normal.rawValue
+    @AppStorage(GameSettingsKeys.vibrationEnabled) var vibrationEnabled: Bool = true
+    @AppStorage(GameSettingsKeys.gracefulBingos) var gracefulBingos: Bool = false
+    
     private var gameTimer: Timer?
     private var lastCallTimer: Timer?
     private var preGeneratedSpaces: [BingoSpace] = [] // Store BingoSpace objects
@@ -171,6 +173,10 @@ class BingoViewModel: ObservableObject {
         // Observe app lifecycle changes
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+        
+        if !UserDefaults.standard.bool(forKey: GameSettingsKeys.hasSeenGameModeSelection) {
+            showGameModeSelection = true
+        }
     }
     
     @objc private func appDidEnterBackground() {
