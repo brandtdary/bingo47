@@ -16,6 +16,7 @@ struct BingoView: View {
     @State private var showGameCenter = false
     @State private var isAuthenticated = false
     @State private var showSettingsMenu = false
+    @State private var showJackpotInfo = false
     @State private var isCopied = false
 
     // MARK: Ads
@@ -66,15 +67,22 @@ struct BingoView: View {
                                     .scaledToFit()
                                     .frame(maxWidth: cardSize / 3.5)
 
-                                Text("x \(viewModel.animatedJackpotCount.formatted(shortened: true))")
-                                    .font(.system(size: cardSize / 11)).bold()
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.25)
-                                    .foregroundColor(.white)
+                            Text("x \(viewModel.animatedJackpotCount.formatted(shortened: true))")
+                                .font(.system(size: cardSize / 11)).bold()
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.25)
+                                .foregroundColor(.white)
+                                
                             }
                         .offset(x: viewModel.shouldShowJackpotDisplay() ? -((cardSize / 2) + (cardSize / 4)) : 0)
                         .animation(.spring, value: viewModel.shouldShowJackpotDisplay())
-                        
+                        .onTapGesture {
+                            guard !viewModel.isGameActive else { return }
+                            showJackpotInfo = true
+                        }
+                        .sheet(isPresented: $showJackpotInfo) {
+                            JackpotExplanationView(isPresented: $showJackpotInfo)
+                        }
                         
                         VStack(spacing: 16) {
                             // MARK: SETTINGS MENU
