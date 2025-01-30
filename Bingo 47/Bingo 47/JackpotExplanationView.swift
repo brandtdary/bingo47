@@ -27,7 +27,7 @@ struct JackpotExplanationView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("• Mark **47** to collect $47 bills, multiplied by your bet level.")
-                    Text("• Example: Betting 500 (5× base bet) earns 5× $47 bills.")
+                    Text("• Example: Betting 500 (5× base bet, 100) earns 5× $47 bills.")
                     Text("• Each **bet level** has its own jackpot.")
                     Text("• You win the jackpot when you get a **blackout**.")
                 }
