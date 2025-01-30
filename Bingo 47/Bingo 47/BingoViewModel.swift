@@ -149,9 +149,9 @@ class BingoViewModel: ObservableObject {
     private(set) var bonusBalls: Int = 0
 
     init() {
-#if DEBUG
-        observeSoundErrors()
-#endif
+//#if DEBUG
+        observeErrors()
+//#endif
         resetGame()
         loadOrGenerateCards()
         
@@ -662,7 +662,6 @@ class BingoViewModel: ObservableObject {
     }
     
     fileprivate func playSoundForSpaceMarked(_ nextSpace: BingoSpace, card: BingoCard) {
-        // Play sounds based on match
         let currentBingos = calculateBingos(for: bingoCards.first!)
         
         if nextSpace.isFreeSpace {
@@ -736,12 +735,14 @@ class BingoViewModel: ObservableObject {
             self.bonusBallsOffer = nil
             showRewardedAdButton = false // ✅ Hide button after watching
             NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ No Ad Available, rewarding the user anyways", "function": #function])
-
             return
         }
                 
         rewardedAdViewModel?.showAd { [weak self] in
-            guard let self = self else { return }
+            guard let self = self else {
+                NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Somehow, self was nil after showing ad...", "function": #function])
+                return
+            }
             self.bonusBalls += offer
             self.bonusBallsOffer = nil // Remove offer after use
         }
@@ -905,17 +906,12 @@ class BingoViewModel: ObservableObject {
     }
     
     
-    // MARK: Error Handling (Sounds)
-    private func observeSoundErrors() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleSoundError(_:)),
-            name: .errorNotification,
-            object: nil
-        )
+    // MARK: Error Handling
+    private func observeErrors() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleError(_:)), name: .errorNotification, object: nil)
     }
 
-    @objc private func handleSoundError(_ notification: Notification) {
+    @objc private func handleError(_ notification: Notification) {
         if let errorMessage = notification.userInfo?["message"] as? String {
             DispatchQueue.main.async {
                 self.errorMessages.append(errorMessage)

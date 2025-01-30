@@ -24,10 +24,13 @@ class RewardedAdViewModel: NSObject {
     func loadAd() {
         GADRewardedAd.load(withAdUnitID: adUnitID, request: GADRequest()) { [weak self] ad, error in
             if let error = error {
-                print("❌ Failed to load rewarded ad: \(error.localizedDescription)")
+                let errorMessage = "❌ Failed to load rewarded ad: \(error.localizedDescription)"
+                NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage, "function": #function])
+                #if DEBUG
+                print(errorMessage)
+                #endif
                 self?.rewardedAd = nil
             } else {
-                print("✅ Rewarded ad loaded successfully")
                 self?.rewardedAd = ad
             }
         }
@@ -36,12 +39,22 @@ class RewardedAdViewModel: NSObject {
     /// Shows the ad if it's ready, otherwise loads a new one
     func showAd(completion: @escaping () -> Void) {
         guard let rootViewController = UIApplication.shared.rootViewController else {
-            print("⚠️ Unable to get rootViewController")
+            let errorMessage = "⚠️ Unable to get rootViewController"
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage, "function": #function])
+            #if DEBUG
+            print(errorMessage)
+            #endif
+            completion()
             return
         }
 
         guard let rewardedAd = rewardedAd else {
-            print("⚠️ No ad available, attempting to reload...")
+            let errorMessage = "⚠️ No ad available, attempting to reload..."
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage, "function": #function])
+            #if DEBUG
+            print(errorMessage)
+            #endif
+            completion()
             loadAd()
             return
         }
@@ -49,7 +62,7 @@ class RewardedAdViewModel: NSObject {
         rewardedAd.present(fromRootViewController: rootViewController) { [weak self] in
             NotificationCenter.default.post(name: .rewardedAdDidFinish, object: nil)
             self?.adCompletionHandler = nil
-            self?.loadAd() // Preload next ad
+            self?.loadAd()
             completion()
         }
     }
