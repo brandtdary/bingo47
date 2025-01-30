@@ -28,8 +28,8 @@ struct GameModeSelectionView: View {
                 .multilineTextAlignment(.center)
                 .foregroundColor(.white)
                 .padding(.horizontal)
-
-            VStack(alignment: .leading, spacing: 10) { // ✅ Ensures left alignment
+            
+            VStack(alignment: .leading, spacing: 16) { // ✅ Ensures left alignment
                 Button(action: {
                     selectMode(classic: true)
                 }) {
@@ -73,14 +73,16 @@ struct GameModeSelectionView: View {
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }
-
-                Text("You can always change this later in Settings.")
+            }
+            .padding(.horizontal)
+            
+            VStack(alignment: .center) {
+                Text("You can change this later in Settings.")
                     .font(.caption)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.white)
                     .padding(.horizontal)
             }
-            .padding(.horizontal)
 
             Spacer()
         }
