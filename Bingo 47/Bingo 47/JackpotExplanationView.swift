@@ -1,6 +1,6 @@
 //
 //  JackpotExplanationView.swift
-//  Bingo Tap
+//  Bingo 47
 //
 //  Created by Brandt Dary on 1/29/25.
 //

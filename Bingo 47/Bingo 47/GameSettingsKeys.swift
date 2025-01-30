@@ -5,14 +5,6 @@
 //  Created by Brandt Dary on 1/29/25.
 //
 
-
-//
-//  GameSettings.swift
-//  Bingo Tap
-//
-//  Created by Brandt Dary on 1/29/25.
-//
-
 import Foundation
 
 enum GameSettingsKeys {

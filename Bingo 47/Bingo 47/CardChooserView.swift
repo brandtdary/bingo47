@@ -1,6 +1,6 @@
 //
 //  CardChooserView.swift
-//  Bingo Tap
+//  Bingo 47
 //
 //  Created by Brandt Dary on 1/17/25.
 //
