@@ -13,7 +13,7 @@ struct GameModeSelectionView: View {
     var body: some View {
         VStack(spacing: 20) {
             Text("Welcome to")
-                .font(.title)
+                .font(.title2)
                 .bold()
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
@@ -38,7 +38,7 @@ struct GameModeSelectionView: View {
                             .font(.title2)
                             .bold()
                         Text("""
-                        • Numbers are called
+                        • Called numbers spoken
                         • Tap to mark numbers
                         • Normal speed
                         """)
@@ -86,6 +86,7 @@ struct GameModeSelectionView: View {
 
             Spacer()
         }
+        .minimumScaleFactor(0.1)
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.black) // Dark background
