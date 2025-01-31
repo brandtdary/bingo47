@@ -696,7 +696,7 @@ class BingoViewModel: ObservableObject {
         credits += currentGameWinnings
         
         if bonusBallsOffer == nil && Int.random(in: 1...100) > 25 { // 75% chance of bonus
-            bonusBalls = [1,1,2,2,2,2,3,3,3,4,4,5,5].randomElement() ?? 1
+            bonusBalls = [1,2,2,3,3].randomElement() ?? 1
         }
         
         submitScoreToLeaderboard(score: credits)
@@ -892,39 +892,9 @@ class BingoViewModel: ObservableObject {
         } else if bonusBallOfferCooldown > 0 {
             bonusBallOfferCooldown -= 1
         } else if adIsReady {
-            bonusBallsOffer = weightedBonusBallOffer()
+            bonusBallsOffer = [5,5,5,6,6,7].randomElement()!
             bonusBallOfferGamesRemaining = 3
         }
-    }
-    
-    // Define weighted probabilities for bonus ball amounts
-    private func weightedBonusBallOffer() -> Int {
-        let weightedOptions: [(value: Int, weight: Int)] = [
-            (6, 26),  // 26% chance
-            (7, 20),  // 20% chance
-            (8, 15),  // 15% chance
-            (9, 12),  // 12% chance
-            (10, 10), // 10% chance
-            (11, 7),  // 7% chance
-            (12, 5),  // 5% chance
-            (13, 3),  // 3% chance
-            (14, 2),  // 2% chance
-            (15, 1)   // 1% chance
-        ]
-
-        // Create a cumulative weighted array
-        let totalWeight = weightedOptions.reduce(0) { $0 + $1.weight }
-        let randomValue = Int.random(in: 1...totalWeight)
-
-        var currentWeight = 0
-        for option in weightedOptions {
-            currentWeight += option.weight
-            if randomValue <= currentWeight {
-                return option.value
-            }
-        }
-
-        return 6 // Fallback (should never happen)
     }
     
     // MARK: Error Handling
