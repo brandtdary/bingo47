@@ -532,8 +532,8 @@ struct BingoView: View {
                                     .frame(height: 44)
                                     .background(Color.gold.dimmedIf(viewModel.isGameActive))
                                     .cornerRadius(15)
-                                    .scaleEffect(viewModel.bonusBallsOffer != nil ? 1.0 : 0.25)
-                                    .opacity(viewModel.bonusBallsOffer != nil ? 1 : 0)
+                                    .scaleEffect(viewModel.canShowBonusBallButton ? 1.0 : 0.25)
+                                    .opacity(viewModel.canShowBonusBallButton ? 1 : 0)
                                     .animation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0), value: viewModel.bonusBallsOffer)
                                 }
                                 .disabled(viewModel.isGameActive)

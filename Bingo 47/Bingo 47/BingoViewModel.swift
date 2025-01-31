@@ -706,21 +706,30 @@ class BingoViewModel: ObservableObject {
     }
     
     @MainActor
+    var canShowBonusBallButton: Bool {
+        guard let rewardedAdViewModel = rewardedAdViewModel else {
+            return false
+        }
+        return bonusBallsOffer != nil && rewardedAdViewModel.isAdReady
+    }
+    
+    @MainActor
     func tryShowingRewardedAd() {
         guard let offer = self.bonusBallsOffer else {
             ErrorManager.log("No Offer Available...")
             showRewardedAdButton = false
             return
         }
-        guard rewardedAdViewModel?.isAdReady == true else {
+
+        guard let rewardedAdViewModel = rewardedAdViewModel, rewardedAdViewModel.isAdReady else {
             bonusBalls += offer
             self.bonusBallsOffer = nil
             showRewardedAdButton = false
             ErrorManager.log("No Ad Available, rewarding the user anyways")
             return
         }
-                
-        rewardedAdViewModel?.showAd { [weak self] in
+
+        rewardedAdViewModel.showAd { [weak self] in
             guard let self = self else {
                 ErrorManager.log("Somehow, self was nil after showing ad...")
                 return
