@@ -197,14 +197,10 @@ class BingoViewModel: ObservableObject {
         }
     }
     
-    private var gameTimeRemaining: TimeInterval = 0
     private var lastCallTimeRemaining: Int = 0
-    private var lastPausedTime: Date?
 
     private func pauseGameTimer() {
         if let timer = gameTimer {
-            lastPausedTime = Date()  // Store the time of pausing
-            gameTimeRemaining = timer.fireDate.timeIntervalSince(Date()) // Store remaining time
             timer.invalidate()
             gameTimer = nil
         }
@@ -218,23 +214,9 @@ class BingoViewModel: ObservableObject {
     }
     
     private func resumeGameTimer() {
-        guard isGameActive, gameTimeRemaining > 0 else { return }
-
-        if let lastPausedTime = lastPausedTime {
-            let elapsedTime = Date().timeIntervalSince(lastPausedTime)
-            gameTimeRemaining -= elapsedTime  // Adjust for elapsed time
-        }
-
-        if gameTimeRemaining > 0 {
-            gameTimer = Timer.scheduledTimer(withTimeInterval: gameTimeRemaining, repeats: false) { [weak self] _ in
-                self?.revealNextSpace()
-                self?.startGameTimer() // Resume normal timer interval
-            }
-        } else {
-            // If time already expired, proceed immediately
-            revealNextSpace()
-            startGameTimer()
-        }
+        guard isGameActive, calledSpaces.count < numbersToDraw else { return }
+        revealNextSpace()
+        startGameTimer()
     }
 
     private func resumeLastCallTimer() {

@@ -29,7 +29,14 @@ final class SoundManager {
         case .began:
             print("🔇 Audio session interrupted.")
         case .ended:
-            configureAudioSession()
+            do {
+                try AVAudioSession.sharedInstance().setActive(true)
+                print("🎵 Audio session reactivated.")
+            } catch {
+                let errorMessage = "❌ Failed to reactivate audio session: \(error.localizedDescription)"
+                NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
+                print(errorMessage)
+            }
         @unknown default:
             break
         }
@@ -38,7 +45,7 @@ final class SoundManager {
     private func configureAudioSession() {
         let session = AVAudioSession.sharedInstance()
         do {
-            try session.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
+            try session.setCategory(.playback, mode: .default, options: [])
             try session.setActive(true)
             print("🎵 Audio session configured successfully.")
         } catch {
@@ -49,7 +56,14 @@ final class SoundManager {
     }
     
     @objc private func restartAudioAfterAd() {
-        configureAudioSession()
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+            print("🎵 Audio session reactivated after ad.")
+        } catch {
+            let errorMessage = "❌ Failed to reactivate audio session: \(error.localizedDescription)"
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
+            print(errorMessage)
+        }
     }
     
     @objc private func appDidBecomeActive() {
@@ -60,8 +74,8 @@ final class SoundManager {
         // Ensure the sound file exists
         guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
             let errorMessage = "❌ Sound file \(sound.fileName).\(sound.fileExtension) not found."
-            print(errorMessage)
             NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
+            print(errorMessage)
             return
         }
         
