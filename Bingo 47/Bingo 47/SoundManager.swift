@@ -1,6 +1,6 @@
 //
 //  SoundManager.swift
-//  Bingo 47
+//  App by GudMilk
 //
 //  Created by Brandt Dary on 12/21/24.
 //
@@ -27,15 +27,14 @@ final class SoundManager {
 
         switch type {
         case .began:
+            #if DEBUG
             print("🔇 Audio session interrupted.")
+            #endif
         case .ended:
             do {
                 try AVAudioSession.sharedInstance().setActive(true)
-                print("🎵 Audio session reactivated.")
             } catch {
-                let errorMessage = "❌ Failed to reactivate audio session: \(error.localizedDescription)"
-                NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
-                print(errorMessage)
+                ErrorManager.log("Failed to reactivate audio session: \(error.localizedDescription)")
             }
         @unknown default:
             break
@@ -47,22 +46,16 @@ final class SoundManager {
         do {
             try session.setCategory(.playback, mode: .default, options: [])
             try session.setActive(true)
-            print("🎵 Audio session configured successfully.")
         } catch {
-            let errorMessage = "❌ Failed to configure audio session: \(error.localizedDescription)"
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
-            print(errorMessage)
+            ErrorManager.log("Failed to configure audio session: \(error.localizedDescription)")
         }
     }
     
     @objc private func restartAudioAfterAd() {
         do {
             try AVAudioSession.sharedInstance().setActive(true)
-            print("🎵 Audio session reactivated after ad.")
         } catch {
-            let errorMessage = "❌ Failed to reactivate audio session: \(error.localizedDescription)"
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
-            print(errorMessage)
+            ErrorManager.log("Failed to reactivate audio session after ad: \(error.localizedDescription)")
         }
     }
     
@@ -73,9 +66,7 @@ final class SoundManager {
     func playSound(_ sound: Sound) {
         // Ensure the sound file exists
         guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
-            let errorMessage = "❌ Sound file \(sound.fileName).\(sound.fileExtension) not found."
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
-            print(errorMessage)
+            ErrorManager.log("Sound file \(sound.fileName).\(sound.fileExtension) not found.")
             return
         }
         
@@ -98,17 +89,13 @@ final class SoundManager {
             
             soundPools[sound]?.append(player) // Add to the pool
         } catch {
-            let errorMessage = "❌ Error playing sound \(sound.fileName): \(error.localizedDescription)"
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
-            print(errorMessage)
+            ErrorManager.log("Error playing sound \(sound.fileName): \(error.localizedDescription)")
         }
     }
 
     
     deinit {
-        let errorMessage = "❌ SoundManager is being deallocated unexpectedly!"
-        NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage,"function": #function])
-        print(errorMessage)
+        ErrorManager.log("SoundManager is being deallocated unexpectedly!")
     }
 }
 
@@ -123,6 +110,5 @@ enum Sound: String, CaseIterable {
 
 
 extension Notification.Name {
-    static let errorNotification = Notification.Name("errorNotification")
     static let rewardedAdDidFinish = Notification.Name("rewardDidFinishNotification")
 }

@@ -1,6 +1,6 @@
 //
 //  IAPManager.swift
-//  Bingo 47
+//  App by GudMilk
 //
 //  Created by Brandt Dary on 1/17/25.
 //

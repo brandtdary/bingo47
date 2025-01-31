@@ -1,6 +1,6 @@
 //
 //  HapticManager.swift
-//  GudBingo
+//  App by GudMilk
 //
 //  Created by Brandt Dary on 12/21/24.
 //

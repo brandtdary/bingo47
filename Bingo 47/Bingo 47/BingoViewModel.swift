@@ -708,21 +708,21 @@ class BingoViewModel: ObservableObject {
     @MainActor
     func tryShowingRewardedAd() {
         guard let offer = self.bonusBallsOffer else {
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ No Offer Available...", "function": #function])
+            ErrorManager.log("No Offer Available...")
             showRewardedAdButton = false
             return
         }
         guard rewardedAdViewModel?.isAdReady == true else {
-            bonusBalls += offer // ✅ Reward the player
+            bonusBalls += offer
             self.bonusBallsOffer = nil
-            showRewardedAdButton = false // ✅ Hide button after watching
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ No Ad Available, rewarding the user anyways", "function": #function])
+            showRewardedAdButton = false
+            ErrorManager.log("No Ad Available, rewarding the user anyways")
             return
         }
                 
         rewardedAdViewModel?.showAd { [weak self] in
             guard let self = self else {
-                NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": "❌ Somehow, self was nil after showing ad...", "function": #function])
+                ErrorManager.log("Somehow, self was nil after showing ad...")
                 return
             }
             self.bonusBalls += offer

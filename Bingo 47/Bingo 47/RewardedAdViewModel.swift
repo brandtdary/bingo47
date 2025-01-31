@@ -24,11 +24,7 @@ class RewardedAdViewModel: NSObject {
     func loadAd() {
         GADRewardedAd.load(withAdUnitID: adUnitID, request: GADRequest()) { [weak self] ad, error in
             if let error = error {
-                let errorMessage = "❌ Failed to load rewarded ad: \(error.localizedDescription)"
-                NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage, "function": #function])
-                #if DEBUG
-                print(errorMessage)
-                #endif
+                ErrorManager.log("Failed to load rewarded ad: \(error.localizedDescription)")
                 self?.rewardedAd = nil
             } else {
                 self?.rewardedAd = ad
@@ -39,21 +35,13 @@ class RewardedAdViewModel: NSObject {
     /// Shows the ad if it's ready, otherwise loads a new one
     func showAd(completion: @escaping () -> Void) {
         guard let rootViewController = UIApplication.shared.rootViewController else {
-            let errorMessage = "⚠️ Unable to get rootViewController"
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage, "function": #function])
-            #if DEBUG
-            print(errorMessage)
-            #endif
+            ErrorManager.log("⚠️ Unable to get rootViewController")
             completion()
             return
         }
 
         guard let rewardedAd = rewardedAd else {
-            let errorMessage = "⚠️ No ad available, attempting to reload..."
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage, "function": #function])
-            #if DEBUG
-            print(errorMessage)
-            #endif
+            ErrorManager.log("⚠️ No ad available, attempting to reload...")
             completion()
             loadAd()
             return
