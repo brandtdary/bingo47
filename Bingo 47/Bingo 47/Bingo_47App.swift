@@ -12,6 +12,7 @@ import GoogleMobileAds
 struct Bingo_47App: App {
     init() {
         GADMobileAds.sharedInstance().start(completionHandler: nil)
+        GADMobileAds.sharedInstance().requestConfiguration.testDeviceIdentifiers = [ "12f981878b6c3e13a3f518914f69bd2a" ]
     }
 
     var body: some Scene {

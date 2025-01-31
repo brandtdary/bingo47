@@ -57,6 +57,8 @@ class RewardedAdViewModel: NSObject {
 
     /// Checks if the ad is ready to be shown
     var isAdReady: Bool {
-        rewardedAd != nil
+        let ready = rewardedAd != nil
+        print("📡 isAdReady Check:", ready)
+        return ready
     }
 }

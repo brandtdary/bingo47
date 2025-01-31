@@ -149,9 +149,7 @@ class BingoViewModel: ObservableObject {
     private(set) var bonusBalls: Int = 0
 
     init() {
-//#if DEBUG
         observeErrors()
-//#endif
         resetGame()
         loadOrGenerateCards()
         
@@ -715,6 +713,7 @@ class BingoViewModel: ObservableObject {
     
     @MainActor
     func tryShowingRewardedAd() {
+        ErrorManager.log("🔵 Button Tapped - Checking Conditions")
         guard let offer = self.bonusBallsOffer else {
             ErrorManager.log("No Offer Available...")
             showRewardedAdButton = false
@@ -728,12 +727,15 @@ class BingoViewModel: ObservableObject {
             ErrorManager.log("No Ad Available, rewarding the user anyways")
             return
         }
+        
+        ErrorManager.log("✅ Ad is Ready - Showing Now")
 
         rewardedAdViewModel.showAd { [weak self] in
             guard let self = self else {
                 ErrorManager.log("Somehow, self was nil after showing ad...")
                 return
             }
+            ErrorManager.log("Ad shown successfully")
             self.bonusBalls += offer
             self.bonusBallsOffer = nil // Remove offer after use
         }
