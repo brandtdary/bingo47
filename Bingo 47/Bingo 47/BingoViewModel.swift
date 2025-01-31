@@ -89,7 +89,7 @@ class BingoViewModel: ObservableObject {
     private var lastCallTimer: Timer?
     private var preGeneratedSpaces: [BingoSpace] = [] // Store BingoSpace objects
     private let minimumBingosForPayout = 1
-    private let betMultipliers = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
+    private let betMultipliers = [1, 2, 5, 10, 25, 100, 500, 1000, 5000, 10_000, 25_000, 100_000, 1_000_000, 10_000_000]
     private var previousBingos = 0
     private let jackpotStorageKey = "jackpotStorage"
     static let bonusSpaceID = "47"
