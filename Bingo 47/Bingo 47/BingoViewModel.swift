@@ -701,43 +701,38 @@ class BingoViewModel: ObservableObject {
         
         submitScoreToLeaderboard(score: credits)
     }
-    
-    @MainActor
-    var canShowBonusBallButton: Bool {
-        guard let rewardedAdViewModel = rewardedAdViewModel else {
-            return false
-        }
-        return bonusBallsOffer != nil && rewardedAdViewModel.isAdReady
-    }
-    
+        
     @MainActor
     func tryShowingRewardedAd() {
-        ErrorManager.log("🔵 Button Tapped - Checking Conditions")
-        guard let offer = self.bonusBallsOffer else {
+        showRewardedAdButton = false // Hide the button immediately after tap
+        
+        guard let offer = bonusBallsOffer else {
             ErrorManager.log("No Offer Available...")
-            showRewardedAdButton = false
             return
         }
 
-        guard let rewardedAdViewModel = rewardedAdViewModel, rewardedAdViewModel.isAdReady else {
-            bonusBalls += offer
-            self.bonusBallsOffer = nil
-            showRewardedAdButton = false
-            ErrorManager.log("No Ad Available, rewarding the user anyways")
+        guard let rewardedAdViewModel = rewardedAdViewModel else {
+            ErrorManager.log("No Ad Model Found - Rewarding Anyway")
+            rewardUser(with: offer)
             return
         }
         
-        ErrorManager.log("✅ Ad is Ready - Showing Now")
-
-        rewardedAdViewModel.showAd { [weak self] in
-            guard let self = self else {
-                ErrorManager.log("Somehow, self was nil after showing ad...")
-                return
+        if rewardedAdViewModel.isAdReady {
+            rewardedAdViewModel.showAd {
+                self.rewardUser(with: offer)
             }
-            ErrorManager.log("Ad shown successfully")
-            self.bonusBalls += offer
-            self.bonusBallsOffer = nil // Remove offer after use
+        } else {
+            ErrorManager.log("❌ Ad Not Ready - Loading New Ad")
+            rewardedAdViewModel.loadAd() // ✅ Try loading the ad immediately
+            rewardUser(with: offer)       // Reward the user even though the ad wasn't ready
         }
+    }
+
+    // ✅ Centralized reward logic
+    private func rewardUser(with offer: Int) {
+        bonusBalls += offer
+        bonusBallsOffer = nil
+        showRewardedAdButton = false
     }
     
     func handleGameEnd() {
@@ -881,8 +876,10 @@ class BingoViewModel: ObservableObject {
         return space.id == BingoViewModel.bonusSpaceID
     }
     
-    @MainActor func checkBonusBallOffer() {
+    @MainActor
+    func checkBonusBallOffer() {
         let adIsReady = rewardedAdViewModel?.isAdReady == true
+        
         if bonusBallOfferGamesRemaining > 0 {
             bonusBallOfferGamesRemaining -= 1
             if bonusBallOfferGamesRemaining == 0 {
@@ -895,6 +892,8 @@ class BingoViewModel: ObservableObject {
             bonusBallsOffer = [5,5,5,6,6,7].randomElement()!
             bonusBallOfferGamesRemaining = 3
         }
+        
+        showRewardedAdButton = (bonusBallsOffer != nil && adIsReady)
     }
     
     // MARK: Error Handling

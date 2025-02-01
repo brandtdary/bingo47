@@ -532,9 +532,9 @@ struct BingoView: View {
                                     .frame(height: 44)
                                     .background(Color.gold.dimmedIf(viewModel.isGameActive))
                                     .cornerRadius(15)
-                                    .scaleEffect(viewModel.canShowBonusBallButton ? 1.0 : 0.25)
-                                    .opacity(viewModel.canShowBonusBallButton ? 1 : 0)
-                                    .animation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0), value: viewModel.canShowBonusBallButton)
+                                    .scaleEffect(viewModel.showRewardedAdButton ? 1.0 : 0.25)
+                                    .opacity(viewModel.showRewardedAdButton ? 1 : 0)
+                                    .animation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0), value: viewModel.showRewardedAdButton)
                                 }
                                 .disabled(viewModel.isGameActive)
 
@@ -670,12 +670,8 @@ struct BingoView: View {
             .frame(maxHeight: viewModel.errorMessages.isEmpty ? 0 : .infinity)
             .animation(.easeInOut, value: viewModel.errorMessages)            
         }
-        .onChange(of: viewModel.canShowBonusBallButton) {
-            print("🔍 Button Check: canShowBonusBallButton =", viewModel.canShowBonusBallButton)
-        }
         .onAppear {
             authenticateUser()
-            print("🔍 Button Check: canShowBonusBallButton =", viewModel.canShowBonusBallButton)
         }
         .sheet(isPresented: $viewModel.showGameModeSelection) {
             GameModeSelectionView(isPresented: $viewModel.showGameModeSelection)
