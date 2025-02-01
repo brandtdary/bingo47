@@ -33,6 +33,9 @@ final class SoundManager {
         case .ended:
             do {
                 try AVAudioSession.sharedInstance().setActive(true)
+#if DEBUG
+print("✅ Audio session set to active.")
+#endif
             } catch {
                 ErrorManager.log("Failed to reactivate audio session: \(error.localizedDescription)")
             }
