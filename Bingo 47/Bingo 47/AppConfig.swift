@@ -9,5 +9,5 @@ import Foundation
 
 struct AppConfig {
     /// Set to `true` when preparing for App Store submission to disable non-production code.
-    static let isProductionBuild: Bool = true
+    static let isProductionBuild: Bool = false
 }
