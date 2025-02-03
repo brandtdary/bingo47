@@ -345,7 +345,6 @@ struct BingoView: View {
                     }
                     
                     HStack(alignment: .top) {
-                        let payoutTableWidth = min(300, totalWidth * 0.4) // Expands on iPads, but maxes at 300px
                         let payoutTableHeight = totalHeight * 0.35
                         
                         // MARK:  Payout Table - Dynamically sized
@@ -555,7 +554,7 @@ struct BingoView: View {
                         Text(viewModel.errorMessages[index])
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.red.opacity(0.95))
+                            .background(Color.black.opacity(0.85))
                             .foregroundColor(.white)
                             .cornerRadius(10)
                             .transition(.opacity)
@@ -568,6 +567,7 @@ struct BingoView: View {
                         viewModel.errorMessages.removeAll()
                     } label: {
                         Text("Clear All")
+                            .font(.headline)
                             .padding()
                             .frame(maxWidth: .infinity)
                             .background(Color.blue)

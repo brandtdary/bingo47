@@ -12,7 +12,6 @@ import UIKit
 class RewardedAdViewModel: NSObject {
     private var rewardedAd: GADRewardedAd?
     private var adUnitID: String
-    private var adCompletionHandler: (() -> Void)?
 
     init(adUnitID: String) {
         self.adUnitID = adUnitID
@@ -24,10 +23,12 @@ class RewardedAdViewModel: NSObject {
     func loadAd() {
         GADRewardedAd.load(withAdUnitID: adUnitID, request: GADRequest()) { [weak self] ad, error in
             if let error = error {
-                ErrorManager.log("Failed to load rewarded ad: \(error.localizedDescription)")
+                ErrorManager.log("❌ Failed to load rewarded ad: \(error.localizedDescription)")
                 self?.rewardedAd = nil
-            } else {
+            } else if ad != nil {
                 self?.rewardedAd = ad
+            } else {
+                ErrorManager.log("❌ There was no error... but also no ad.")
             }
         }
     }
@@ -48,8 +49,8 @@ class RewardedAdViewModel: NSObject {
         }
 
         rewardedAd.present(fromRootViewController: rootViewController) { [weak self] in
+            ErrorManager.log("✅ Ad Presented from Root View Controller")
             NotificationCenter.default.post(name: .rewardedAdDidFinish, object: nil)
-            self?.adCompletionHandler = nil
             self?.loadAd()
             completion()
         }
@@ -58,7 +59,6 @@ class RewardedAdViewModel: NSObject {
     /// Checks if the ad is ready to be shown
     var isAdReady: Bool {
         let ready = rewardedAd != nil
-        print("📡 isAdReady Check:", ready)
         return ready
     }
 }

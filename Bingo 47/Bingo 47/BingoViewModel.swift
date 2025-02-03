@@ -438,11 +438,7 @@ class BingoViewModel: ObservableObject {
 
         credits -= baseBet * betMultiplier // Deduct credits
         resetGame() // Reset game state for a new game
-        
-//#if DEBUG
-//        bonusBalls = 0
-//#endif
-        
+                
         numbersToDraw = defaultNumbersToDraw + bonusBalls
         bonusBalls = 0
         
@@ -707,18 +703,20 @@ class BingoViewModel: ObservableObject {
         showRewardedAdButton = false // Hide the button immediately after tap
         
         guard let offer = bonusBallsOffer else {
-            ErrorManager.log("No Offer Available...")
+            ErrorManager.log("❌ No Offer Available...")
             return
         }
 
         guard let rewardedAdViewModel = rewardedAdViewModel else {
-            ErrorManager.log("No Ad Model Found - Rewarding Anyway")
+            ErrorManager.log("❌ No Ad Model Found - Rewarding Anyway")
             rewardUser(with: offer)
             return
         }
         
         if rewardedAdViewModel.isAdReady {
+            ErrorManager.log("✅ Ad Is Ready")
             rewardedAdViewModel.showAd {
+                ErrorManager.log("✅ Ad was shown")
                 self.rewardUser(with: offer)
             }
         } else {
@@ -730,6 +728,7 @@ class BingoViewModel: ObservableObject {
 
     // ✅ Centralized reward logic
     private func rewardUser(with offer: Int) {
+        ErrorManager.log("✅ Rewarding User with \(offer) balls")
         bonusBalls += offer
         bonusBallsOffer = nil
         showRewardedAdButton = false

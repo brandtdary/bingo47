@@ -37,7 +37,7 @@ final class SoundManager {
 print("✅ Audio session set to active.")
 #endif
             } catch {
-                ErrorManager.log("Failed to reactivate audio session: \(error.localizedDescription)")
+                ErrorManager.log("❌ Failed to reactivate audio session: \(error.localizedDescription)")
             }
         @unknown default:
             break
@@ -50,7 +50,7 @@ print("✅ Audio session set to active.")
             try session.setCategory(.playback, mode: .default, options: [])
             try session.setActive(true)
         } catch {
-            ErrorManager.log("Failed to configure audio session: \(error.localizedDescription)")
+            ErrorManager.log("❌ Failed to configure audio session: \(error.localizedDescription)")
         }
     }
     
@@ -58,7 +58,7 @@ print("✅ Audio session set to active.")
         do {
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
-            ErrorManager.log("Failed to reactivate audio session after ad: \(error.localizedDescription)")
+            ErrorManager.log("❌ Failed to reactivate audio session after ad: \(error.localizedDescription)")
         }
     }
     
@@ -69,7 +69,7 @@ print("✅ Audio session set to active.")
     func playSound(_ sound: Sound) {
         // Ensure the sound file exists
         guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) else {
-            ErrorManager.log("Sound file \(sound.fileName).\(sound.fileExtension) not found.")
+            ErrorManager.log("❌ Sound file \(sound.fileName).\(sound.fileExtension) not found.")
             return
         }
         
@@ -92,13 +92,13 @@ print("✅ Audio session set to active.")
             
             soundPools[sound]?.append(player) // Add to the pool
         } catch {
-            ErrorManager.log("Error playing sound \(sound.fileName): \(error.localizedDescription)")
+            ErrorManager.log("❌ Error playing sound \(sound.fileName): \(error.localizedDescription)")
         }
     }
 
     
     deinit {
-        ErrorManager.log("SoundManager is being deallocated unexpectedly!")
+        ErrorManager.log("❌ SoundManager is being deallocated unexpectedly!")
     }
 }
 

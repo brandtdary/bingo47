@@ -17,18 +17,15 @@ final class ErrorManager {
     ///   - shouldPrint: Whether to print the error message (default: true).
     ///   - shouldPost: Whether to post a notification (default: true).
     static func log(_ message: String, function: String = #function, shouldPrint: Bool = true, shouldPost: Bool = true) {
-        guard !AppConfig.isProductionBuild else { return }
-        let errorMessage = "❌ \(message)"
-
+        guard AppConfig.isProductionBuild == false else { return }
         if shouldPrint {
             #if DEBUG
-            print(errorMessage)
+            print(message)
             #endif
         }
         
         if shouldPost {
-            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": errorMessage, "function": function]
-            )
+            NotificationCenter.default.post(name: .errorNotification, object: nil, userInfo: ["message": message, "function": function])
         }
     }
 }
