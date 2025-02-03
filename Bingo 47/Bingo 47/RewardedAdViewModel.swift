@@ -47,13 +47,22 @@ class RewardedAdViewModel: NSObject {
             loadAd()
             return
         }
-
-        rewardedAd.present(fromRootViewController: rootViewController) { [weak self] in
+        
+        if rootViewController.presentedViewController == nil {
+            rewardedAd.present(fromRootViewController: rootViewController) { [weak self] in
+                ErrorManager.log("✅ Ad Presented from Root View Controller")
+                NotificationCenter.default.post(name: .rewardedAdDidFinish, object: nil)
+                self?.rewardedAd = nil
+                self?.loadAd()
+                completion()
+            }
             ErrorManager.log("✅ Ad Presented from Root View Controller")
-            NotificationCenter.default.post(name: .rewardedAdDidFinish, object: nil)
-            self?.loadAd()
-            completion()
+        } else {
+            ErrorManager.log("❌ Rootview Controller wasn't nil")
+
         }
+
+        
     }
 
     /// Checks if the ad is ready to be shown
