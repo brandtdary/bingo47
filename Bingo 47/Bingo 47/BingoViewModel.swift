@@ -700,8 +700,6 @@ class BingoViewModel: ObservableObject {
         
     @MainActor
     func tryShowingRewardedAd() {
-        showRewardedAdButton = false // Hide the button immediately after tap
-        
         guard let offer = bonusBallsOffer else {
             ErrorManager.log("❌ No Offer Available...")
             return
@@ -724,6 +722,8 @@ class BingoViewModel: ObservableObject {
             rewardedAdViewModel.loadAd() // ✅ Try loading the ad immediately
             rewardUser(with: offer)       // Reward the user even though the ad wasn't ready
         }
+        
+        showRewardedAdButton = false // Hide the button immediately after tap
     }
 
     // ✅ Centralized reward logic
@@ -732,6 +732,7 @@ class BingoViewModel: ObservableObject {
         bonusBalls += offer
         bonusBallsOffer = nil
         showRewardedAdButton = false
+        soundManager.playSound(.adReward)
     }
     
     func handleGameEnd() {

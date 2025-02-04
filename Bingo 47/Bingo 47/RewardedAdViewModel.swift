@@ -12,6 +12,7 @@ import UIKit
 class RewardedAdViewModel: NSObject {
     private var rewardedAd: GADRewardedAd?
     private var adUnitID: String
+    private var lastAdLoadDate: Date?
 
     init(adUnitID: String) {
         self.adUnitID = adUnitID
@@ -21,6 +22,7 @@ class RewardedAdViewModel: NSObject {
 
     /// Loads a new rewarded ad
     func loadAd() {
+        lastAdLoadDate = Date()
         GADRewardedAd.load(withAdUnitID: adUnitID, request: GADRequest()) { [weak self] ad, error in
             if let error = error {
                 ErrorManager.log("❌ Failed to load rewarded ad: \(error.localizedDescription)")
@@ -31,6 +33,11 @@ class RewardedAdViewModel: NSObject {
                 ErrorManager.log("❌ There was no error... but also no ad.")
             }
         }
+    }
+    
+    func shouldReloadAd() -> Bool {
+        guard let lastLoad = lastAdLoadDate else { return true }
+        return Date().timeIntervalSince(lastLoad) > 300 // 5 minutes
     }
 
     /// Shows the ad if it's ready, otherwise loads a new one
@@ -61,12 +68,19 @@ class RewardedAdViewModel: NSObject {
             ErrorManager.log("❌ Rootview Controller wasn't nil")
 
         }
-
+        
+        
         
     }
 
     /// Checks if the ad is ready to be shown
     var isAdReady: Bool {
+        if shouldReloadAd() == true {
+            ErrorManager.log("⚠️ Ad expired, reloading in background.")
+            rewardedAd = nil
+            loadAd()
+        }
+        
         let ready = rewardedAd != nil
         return ready
     }
